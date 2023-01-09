@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../utils/config';
 
-const REEF_DENOM = 'reef-finance';
+const REEF_DENOM = 'reef';
 
 interface Price {
   usd: number;

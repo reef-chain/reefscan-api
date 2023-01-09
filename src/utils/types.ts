@@ -136,20 +136,6 @@ export interface ContractData {
   decimals: number;
 }
 
-// interface DefaultToken {
-//   name: string;
-//   address: string;
-//   balance: string;
-//   decimals: number;
-// }
-
-// export interface Token extends DefaultToken {
-//   iconUrl: string;
-// }
-// export interface TokenDB extends DefaultToken {
-//   icon_url: string;
-// }
-
 interface DefaultPool {
   address: string;
   decimals: number;
@@ -173,6 +159,7 @@ export interface User {
   id: string;
   evmAddress: string;
 }
+
 export interface UserTokenBalance extends User {
   tokenAddress: string;
   balance: string;

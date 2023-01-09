@@ -82,8 +82,6 @@ export const getVerifiedContract = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-  validateData(req.body, verificationStatusValidator);
-
   const contract = await findVeririedContract(
     toChecksumAddress(req.params.address),
   );

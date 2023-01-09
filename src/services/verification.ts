@@ -32,6 +32,21 @@ interface ContracVerificationInsert {
   success: boolean;
   errorMessage?: string;
 }
+interface VerifiedContract {
+  id: string;
+  name: string;
+  filename: string;
+  source: JSON;
+  runs: number;
+  optimization: boolean;
+  compilerVersion: JSON;
+  args: any[];
+  target: string;
+  compiledData: JSON;
+  type: string;
+  contractData: JSON;
+  timestamp: Date;
+}
 
 interface UpdateContract {
   name: string;
@@ -173,16 +188,16 @@ export const contractVerificationStatus = async (
       }
     }`
   );
-  return !!verificationRequest.id;
+  return !!verificationRequest && !!verificationRequest.id;
 };
 
 export const findVeririedContract = async (
   id: string,
-): Promise<ContracVerificationInsert | null> => {
-  const verifiedContract = await query<ContracVerificationInsert | null>(
+): Promise<VerifiedContract | null> => {
+  const verifiedContract = await query<VerifiedContract | null>(
     'verifiedContractById',
     `query {
-      verifiedContractById(id: "${toChecksumAddress(id)}") {
+      verifiedContractById(id: "${id}") {
         id
         name
         filename
@@ -190,10 +205,12 @@ export const findVeririedContract = async (
         runs
         optimization
         compilerVersion
+        compiledData
         args
         target
-        success
-        errorMessage
+        type
+        contractData
+        timestamp
       }
     }`
   );

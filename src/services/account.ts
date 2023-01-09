@@ -36,7 +36,6 @@ export const insertTokenHolders = async (accountTokenBalances: UserTokenBalance[
     }
   });
 
-  // TODO check this
   await mutate(`
     mutation {
       saveTokenHolders(
