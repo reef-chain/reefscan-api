@@ -64,7 +64,7 @@ const retrieveUserTokenBalances = async (abi: ABI, address: string, decimals: nu
 
 const resolveErc20 = async (address: string, abi: ABI): Promise<ContractResolve> => {
   const data = await extractERC20ContractData(address, abi);
-  // TODO: uncommet to update token holders (should be done also for ERC721 and ERC1155)
+  // TODO: uncommet to update token holders? it is already done in backtracking
   // const userBalances = await retrieveUserTokenBalances(abi, address, data.decimals);
   // await insertTokenHolders(
   //   userBalances.filter(({ balance }) => BigNumber.from(balance).gt('0')),

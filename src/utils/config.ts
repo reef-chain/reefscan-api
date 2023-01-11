@@ -16,4 +16,5 @@ export default {
   network: process.env.NETWORK,
   graphqlApi: process.env.GRAPHQL_API || "http://localhost:4350/graphql",
   jwtSecret: process.env.JWT_SECRET || '',
+  chunkSize: toNumber(1024, process.env.CHUNK_SIZE),
 };

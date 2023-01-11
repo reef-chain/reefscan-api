@@ -8,6 +8,7 @@ import verificationRouter from './routes/verification';
 import { getReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
+import { backtrackEvents } from './backtracking/backtracking';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
@@ -73,4 +74,5 @@ app.use(errorHandler);
 app.listen(config.httpPort, async () => {
   await getProvider().api.isReadyOrError;
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
+  backtrackEvents();
 });

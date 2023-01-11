@@ -30,7 +30,7 @@ const mutateClient = new ApolloClient({
 });
 
 export const query = async <Res>(entityName: string, statement: string): Promise<Res> => {
-  const result = await queryClient.query({ query: gql(statement) });
+  const result = await queryClient.query({ query: gql(statement), fetchPolicy: 'no-cache' });
   return result.data[entityName];
 };
 

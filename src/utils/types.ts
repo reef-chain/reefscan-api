@@ -6,6 +6,7 @@ import {
   EventFragment,
   ConstructorFragment,
 } from '@ethersproject/abi';
+import ethers from 'ethers';
 
 export interface AppRequest<T> extends Request {
   body: T;
@@ -102,7 +103,7 @@ export interface AutomaticContractVerificationReq {
   address: string;
   filename: string;
   license: License;
-  arguments: string; // Arguments;
+  arguments: string;
   optimization: string;
   compilerVersion: string;
 }
@@ -166,12 +167,129 @@ export interface UserTokenBalance extends User {
   decimals: number;
 }
 
-export interface TokenHolder {
-  evmAddress: string;
-  nftId?: number;
-  balance: string;
-  type: 'Contract' | 'Account';
-  tokenId: string;
-  signerId?: string;
+interface RawEventData {
+  address: string,
+  topics:string[],
+  data: string,
+}
+
+interface SignedExtrinsicData {
+  fee: any;
+  feeDetails: any;
+}
+
+interface ABIS {
+  [name: string]: ABI;
+}
+
+interface EvmEvent {
+  id: string;
+  blockid: string;
+  eventindex: number;
+  extrinsicindex: number;
+  contractaddress: string;
+  rawdata: RawEventData;
+  parseddata: ethers.utils.LogDescription;
+  method: string;
+  type: string;
+  status: string;
+  topic0: string;
+  topic1: string;
+  topic2: string;
+  topic3: string;
+}
+
+export type TokenType = 'ERC20' | 'ERC721' | 'ERC1155';
+type VerifiedContractType = 'other' | TokenType;
+type VerifiedContractData = null | ERC20Data | ERC721Data; // TODO change null to empty object
+
+interface BytecodeLog {
+  data: string;
+  address: string;
+  topics: string[];
+}
+
+interface BytecodeLogWithBlockId extends BytecodeLog {
+  blockId: string;
   timestamp: number;
+  extrinsicId: string;
+  signedData: SignedExtrinsicData;
+}
+
+interface EvmLog extends BytecodeLogWithBlockId {
+  id: string;
+  abis: ABIS;
+  name: string;
+  type: VerifiedContractType;
+  contractData: VerifiedContractData;
+}
+
+export interface BacktrackingEvmEvent extends EvmEvent {
+  extrinsicid: string;
+  timestamp: number;
+  signeddata: SignedExtrinsicData;
+}
+
+export interface EvmEventDataParsed {
+  id: string;
+  dataParsed: ethers.utils.LogDescription; 
+}
+
+export interface VerifiedContract {
+  name: string;
+  id: string;
+  compiledData: ABIS;
+  type: VerifiedContractType;
+  contractData: VerifiedContractData;
+}
+
+export interface EvmLogWithDecodedEvent extends EvmLog {
+  decodedEvent: ethers.utils.LogDescription;
+}
+
+export interface Transfer {
+  id: string;
+  blockId: string;
+  extrinsicId: string;
+
+  toId: string;
+  fromId: string;
+
+  tokenId: string;
+  fromEvmAddress: string;
+  toEvmAddress: string;
+
+  type: 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';
+  amount: string;
+  feeAmount: string;
+
+  denom?: string;
+  nftId?: string;
+
+  success: boolean;
+  errorMessage: string;
+
+  timestamp: number;
+}
+
+type TokenHolderType = 'Contract' | 'Account';
+type TokenHolderNftId = null | string | undefined;
+
+interface TokenHolderBase {
+  timestamp: number;
+  evmAddress: string;
+  tokenId: string;
+  nftId: TokenHolderNftId;
+}
+
+export interface TokenHolderHead extends TokenHolderBase {
+  abi: ABI,
+  type: TokenType
+}
+
+export interface TokenHolder extends TokenHolderBase {
+  id: string;
+  balance: string;
+  type: TokenHolderType;
+  signerId: string;
 }
