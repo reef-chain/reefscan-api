@@ -74,7 +74,7 @@ const findContractBytecode = async (id: string): Promise<string> => {
     }`
   );
   ensure(!!contract && !!contract.bytecode, 'Contract does not exist', 404);
-  return contract.bytecode!;
+  return contract!.bytecode!;
 };
 
 const insertVerifiedContract = async ({

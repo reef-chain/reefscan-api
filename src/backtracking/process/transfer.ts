@@ -1,7 +1,8 @@
 import { BigNumber } from 'ethers';
+import config from '../../utils/config';
 import { mutate } from '../../utils/connector';
 import { EvmLogWithDecodedEvent, Transfer } from '../../utils/types';
-import { findNativeAddress, resolvePromisesAsChunks, stringifyArray } from '../../utils/utils';
+import { buildBatches, findNativeAddress, resolvePromisesAsChunks, stringifyArray } from '../../utils/utils';
 import { isErc1155TransferBatchEvent, isErc1155TransferSingleEvent, isErc20TransferEvent, isErc721TransferEvent } from './evmEvent';
 
 const evmLogToTransfer = async ({
@@ -96,13 +97,15 @@ export const processTokenTransfers = async (evmLogs: EvmLogWithDecodedEvent[]): 
   return result.flat();
 };
 
-export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
-  if (!transfers.length) { return; }
-  await mutate<boolean>(
+export const insertTransfers = async (transfers: Transfer[]): Promise<boolean> => {
+  if (!transfers.length) return true;
+  const batches = buildBatches<Transfer>(transfers);
+  const results = await Promise.all(batches.map((batch) => mutate<boolean>(
     `mutation {
       saveTransfers(
-        transfers: ${stringifyArray(transfers)}
+        transfers: ${stringifyArray(batch)}
       )
     }`
-  );
+  )));
+  return results.every((result) => !!result);
 };

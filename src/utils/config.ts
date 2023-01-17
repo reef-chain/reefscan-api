@@ -23,4 +23,5 @@ export default {
   graphqlApi: graphqlApi,
   jwtSecret: process.env.JWT_SECRET || '',
   chunkSize: toNumber(1024, process.env.CHUNK_SIZE),
+  mutationSize: toNumber(100, process.env.MUTATION_SIZE),
 };

@@ -13,7 +13,7 @@ interface FindContractDB {
 }
 
 export const findContractDB = async (address: string): Promise<FindContractDB[]> => {
-  return query<FindContractDB[]>(
+  return await query<FindContractDB[]>(
     'findContract',
     `query {
       findContract(id: "${toChecksumAddress(address)}") {
@@ -26,5 +26,5 @@ export const findContractDB = async (address: string): Promise<FindContractDB[]>
         filename
       }
     }`
-  );
+  ) || [];
 };

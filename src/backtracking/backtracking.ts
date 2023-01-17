@@ -10,9 +10,9 @@ interface Address {
   id: string;
 }
 
-const backtractContractEvents = async (contractAddress: string) => {
+const backtractContractEvents = async (contractAddress: string): Promise<boolean> => {
   console.log(`Retrieving contract ${contractAddress} unverified evm events`);
-  const evmEvents = await query<BacktrackingEvmEvent[]>(
+  let evmEvents = await query<BacktrackingEvmEvent[]>(
     'findBacktrackingEvmEvents',
     `query {
       findBacktrackingEvmEvents(id: "${contractAddress}") {
@@ -31,6 +31,7 @@ const backtractContractEvents = async (contractAddress: string) => {
       }
     }`
   );
+  if (!evmEvents) return false;
 
   console.log(`There were ${evmEvents.length} unverified evm events`);
   const contract = await query<VerifiedContract>(
@@ -47,7 +48,8 @@ const backtractContractEvents = async (contractAddress: string) => {
   );
 
   if (!contract) {
-    throw new Error(`Contract address: ${contractAddress} was not found in verified contract...`);
+    console.log(`Contract address: ${contractAddress} was not found in verified contract...`);
+    return false;
   }
 
   const contractInterface = new ethers.utils.Interface(contract.compiledData[contract.name]);
@@ -94,11 +96,14 @@ const backtractContractEvents = async (contractAddress: string) => {
   const tokenHolders = await processEvmTokenHolders(evmLogs);
 
   console.log('Inserting Transfers');
-  await insertTransfers(transfers);
+  if (!await insertTransfers(transfers)) return false;
   console.log('Inserting Token holders');
-  await insertTokenHolders(tokenHolders);
+  if (!await insertTokenHolders(tokenHolders)) return false;
   console.log('Updating evm events with parsed data');
-  await updateEvmEventsDataParsed(processedLogs.map((log) => { return { id: log.id, dataParsed: log.parseddata } }));
+  if (!await updateEvmEventsDataParsed(processedLogs.map((log) => { return { id: log.id, dataParsed: log.parseddata } }))) return false;
+
+  console.log('Contract events updated successfully');
+  return true;
 };
 
 export const backtrackEvents = async () => {
@@ -108,21 +113,24 @@ export const backtrackEvents = async () => {
     const contracts = await query<Address[]>(
       'newlyVerifiedContractQueues',
       `query {
-        newlyVerifiedContractQueues {
+        newlyVerifiedContractQueues(limit: 100) {
           id
         }
       }`
-    );
+    ) || [];
 
     for (let contractIndex = 0; contractIndex < contracts.length; contractIndex += 1) {
       // Process contract events & store them
       const { id } = contracts[contractIndex];
-      await backtractContractEvents(id);
-      await mutate<boolean>(
-        `mutation {
-          deleteNewlyVerifiedContractQueue(id: "${id}")
-        }`
-      );
+      if (await backtractContractEvents(id)) {
+        await mutate<boolean>(
+          `mutation {
+            deleteNewlyVerifiedContractQueue(id: "${id}")
+          }`
+        );
+      } else {
+        console.log(`Error processing contract events for ${id}`);
+      }
     }
 
     await wait(1000);

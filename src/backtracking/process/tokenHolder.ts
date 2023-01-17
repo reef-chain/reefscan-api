@@ -1,6 +1,6 @@
 import { mutate } from "../../utils/connector";
 import { EvmLogWithDecodedEvent, TokenHolder, TokenHolderHead, TokenType } from "../../utils/types";
-import { balanceOf, balanceOfErc1155, dropDuplicatesMultiKey, findNativeAddress, removeUndefinedItem, resolvePromisesAsChunks, stringifyArray } from "../../utils/utils";
+import { balanceOf, balanceOfErc1155, buildBatches, dropDuplicatesMultiKey, findNativeAddress, removeUndefinedItem, resolvePromisesAsChunks, stringifyArray } from "../../utils/utils";
 import { isErc1155TransferBatchEvent, isErc1155TransferSingleEvent, isErc20TransferEvent, isErc721TransferEvent } from "./evmEvent";
 
 const prepareTokenHolderHead = (evmAddress: string, nftId: null | string, type: TokenType, {
@@ -78,13 +78,15 @@ export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]):
   return dropDuplicatesMultiKey(results.filter(removeUndefinedItem), ['id']);
 };
 
-export const insertTokenHolders = async (tokenHolders: TokenHolder[]): Promise<void> => {
-  if (!tokenHolders.length) { return; }
-  await mutate<boolean>(
+export const insertTokenHolders = async (tokenHolders: TokenHolder[]): Promise<boolean> => {
+  if (!tokenHolders.length) return true;
+  const batches = buildBatches(tokenHolders);
+  const results = await Promise.all(batches.map((batch) => mutate<boolean>(
     `mutation {
       saveTokenHolders(
-        tokenHolders: ${stringifyArray(tokenHolders)}
+        tokenHolders: ${stringifyArray(batch)}
       )
     }`
-  );
+  )));
+  return results.every((result) => !!result);
 };

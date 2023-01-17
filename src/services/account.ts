@@ -6,7 +6,7 @@ import {
 import { toChecksumAddress } from '../utils/utils';
 
 export const getAllUsersWithEvmAddress = async (): Promise<User[]> => {
-  return query<User[]>(
+  return await query<User[]>(
     'accounts',
     `query {
       accounts(where: {
@@ -17,7 +17,7 @@ export const getAllUsersWithEvmAddress = async (): Promise<User[]> => {
         id
         evmAddress
       }
-    }`);
+    }`) || [];
 };
 
 export const insertTokenHolders = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
