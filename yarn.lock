@@ -2386,7 +2386,7 @@
     "@reef-defi/api-derive" "^1.1.0"
     "@reef-defi/types" "^1.1.0"
 
-"@reef-defi/evm-provider@^1.0.7":
+"@reef-defi/evm-provider@^1.0.10":
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/@reef-defi/evm-provider/-/evm-provider-1.0.10.tgz#f2d755f37950f8ca2c6942e13ceb29974b6e1f54"
   integrity sha512-IQl1imac+YXt4hOi2Q8qrwRt+4TjZPTC8SxfNK3vILaBW7N+SRA07lh5cvZ0htHvY6PErRoKNNKV+c6sKHTB1g==
@@ -3718,9 +3718,9 @@ camelcase@^6.0.0, camelcase@^6.2.0, camelcase@^6.2.1:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 caniuse-lite@^1.0.30001400:
-  version "1.0.30001446"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001446.tgz#6d4ba828ab19f49f9bcd14a8430d30feebf1e0c5"
-  integrity sha512-fEoga4PrImGcwUUGEol/PoFCSBnSkA9drgdkxXkJLsUBOnJ8rs3zDv6ApqYXGQFOyMPsjh79naWhF4DAxbF8rw==
+  version "1.0.30001445"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001445.tgz#cf2d4eb93f2bcdf0310de9dd6d18be271bc0b447"
+  integrity sha512-8sdQIdMztYmzfTMO6KfLny878Ln9c2M0fc7EH60IjlP4Dc4PiCy7K2Vl3ITmWgOyPgVQKa5x+UP/KqFsxj4mBg==
 
 capture-exit@^2.0.0:
   version "2.0.0"
