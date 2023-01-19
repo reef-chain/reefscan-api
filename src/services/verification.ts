@@ -31,6 +31,7 @@ interface ContracVerificationInsert {
   target: string;
   success: boolean;
   errorMessage?: string;
+  license?: License;
 }
 interface VerifiedContract {
   id: string;
@@ -64,6 +65,16 @@ interface UpdateContract {
   data: string;
 }
 
+const checkLicense = (verification: AutomaticContractVerificationReq) => {
+  const sourceMain = JSON.parse(verification.source)[verification.filename];
+  const licenseRegex =
+    /SPDX-License-Identifier:\s*(none|unlicense|MIT|GNU GPLv2|GNU GPLv3|GNU LGPLv2.1|GNU LGPLv3|BSD-2-Clause|BSD-3-Clause|MPL-2.0|OSL-3.0|Apache-2.0|GNU AGPLv3)/i;
+  const match = sourceMain.match(licenseRegex);
+  if (match) {
+    ensure(match[1] === verification.license, 'Mismatch in license', 404);
+  }
+};
+
 const findContractBytecode = async (id: string): Promise<string> => {
   const contract = await query<Bytecode>(
     'contractById',
@@ -90,6 +101,7 @@ const insertVerifiedContract = async ({
   target,
   type,
   data,
+  license
 }: UpdateContract): Promise<void> => {
   await mutate(`
     mutation {
@@ -106,6 +118,7 @@ const insertVerifiedContract = async ({
         compiledData: ${JSON.stringify(JSON.stringify(abi))},
         type: "${type}",
         contractData: "${data}"
+        license: "${license}",
         timestamp: ${Date.now()}
       )
     }
@@ -124,6 +137,7 @@ export const contractVerificationRequestInsert = async ({
   target,
   success,
   errorMessage,
+  license
 }: ContracVerificationInsert): Promise<void> => {
   await mutate(`
     mutation {
@@ -139,6 +153,7 @@ export const contractVerificationRequestInsert = async ({
         target: "${target}",
         message: "${errorMessage}",
         success: ${success},
+        license: "${license}",
         timestamp: ${Date.now()}
       )
     }
@@ -148,6 +163,8 @@ export const contractVerificationRequestInsert = async ({
 export const verify = async (
   verification: AutomaticContractVerificationReq,
 ): Promise<void> => {
+  checkLicense(verification);
+
   const args = verification.arguments;
 
   const deployedBytecode = await findContractBytecode(verification.address);

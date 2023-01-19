@@ -40,7 +40,7 @@ const optimizationSchema: JSONSchemaType<string> = {
   type: 'string',
   pattern: 'true|false',
 };
-const licencesSchema: JSONSchemaType<License> = {
+const licensesSchema: JSONSchemaType<License> = {
   type: 'string',
   // pattern: compilerLicenses.join('|'),
 };
@@ -139,7 +139,7 @@ const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq>
     runs: { type: 'number' },
     compilerVersion: compilerVersionSchema,
     filename: filenameSchema,
-    license: licencesSchema,
+    license: licensesSchema,
     optimization: optimizationSchema,
     source: sourceSchema,
     target: targetSchema,
