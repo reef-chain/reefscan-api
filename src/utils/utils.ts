@@ -106,12 +106,11 @@ export const stringifyArray = (array: any[]) => {
       const object = array[i];
       string += `{${Object.entries(object)
         .map(([key, value]) => {
-          typeof value === 'string' ? `${key}: "${value}"` : `${key}: ${value}`
           switch(typeof value) {
             case 'string':
               return `${key}: "${value}"`;
             case 'object':
-              return `${key}: ${JSON.stringify(JSON.stringify(value))}`;
+              return value ? `${key}: ${JSON.stringify(JSON.stringify(value))}` : null;
             default:
               return `${key}: ${value}`;
           }

@@ -1,10 +1,8 @@
 import { Contract } from '@ethersproject/contracts';
-import { BigNumber } from 'ethers';
 import {
-  ABI, ContractResolve, ERC20Data, ERC721Data, UserTokenBalance,
+  ABI, ContractResolve, ERC20Data, ERC721Data,
 } from '../../utils/types';
 import { getProvider } from '../../utils/connector';
-import { getAllUsersWithEvmAddress, insertTokenHolders } from '../account';
 import Erc20Abi from '../../assets/Erc20Abi';
 import Erc721Abi from '../../assets/Erc721Abi';
 import Erc1155Abi from '../../assets/Erc1155Abi';
@@ -50,25 +48,9 @@ const extractERC721ContractData = async (address: string, abi: ABI): Promise<ERC
   return { name, symbol };
 };
 
-const retrieveUserTokenBalances = async (abi: ABI, address: string, decimals: number): Promise<UserTokenBalance[]> => {
-  const users = await getAllUsersWithEvmAddress();
-  const contract = new Contract(address, abi, getProvider());
-  const balances = await Promise.all(
-    users.map(async ({ evmAddress }): Promise<string> => contract.balanceOf(evmAddress)),
-  );
-  const accountBalances: UserTokenBalance[] = users.map((user, index) => ({
-    ...user, decimals, balance: balances[index], tokenAddress: address,
-  }));
-  return accountBalances;
-};
 
 const resolveErc20 = async (address: string, abi: ABI): Promise<ContractResolve> => {
   const data = await extractERC20ContractData(address, abi);
-  // TODO: uncommet to update token holders? it is already done in backtracking
-  // const userBalances = await retrieveUserTokenBalances(abi, address, data.decimals);
-  // await insertTokenHolders(
-  //   userBalances.filter(({ balance }) => BigNumber.from(balance).gt('0')),
-  // );
   return { data, type: 'ERC20' };
 };
 

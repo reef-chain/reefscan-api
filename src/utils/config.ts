@@ -1,7 +1,8 @@
+require('dotenv').config();
+
 if(!process.env.NETWORK){
   throw new Error('NETWORK environment variable missing!')
 }
-require('dotenv').config();
 
 const toNumber = (defaultValue: number, value?: string): number => {
   if (!value) {

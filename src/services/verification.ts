@@ -113,11 +113,11 @@ const insertVerifiedContract = async ({
         runs: ${runs},
         optimization: ${optimization},
         compilerVersion: "${compilerVersion}",
-        args: "${args}",
+        args: ${JSON.stringify(args)},
         target: "${target}",
         compiledData: ${JSON.stringify(JSON.stringify(abi))},
         type: "${type}",
-        contractData: "${data}"
+        contractData: ${JSON.stringify(data)}
         license: "${license}",
         timestamp: ${Date.now()}
       )
@@ -149,7 +149,7 @@ export const contractVerificationRequestInsert = async ({
         runs: ${runs},
         optimization: ${optimization},
         compilerVersion: "${compilerVersion}",
-        args: "${args}",
+        args: ${JSON.stringify(args)},
         target: "${target}",
         message: "${errorMessage}",
         success: ${success},
