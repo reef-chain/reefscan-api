@@ -1,5 +1,4 @@
 import { BigNumber } from 'ethers';
-import config from '../../utils/config';
 import { mutate } from '../../utils/connector';
 import { EvmLogWithDecodedEvent, Transfer } from '../../utils/types';
 import { buildBatches, findNativeAddress, resolvePromisesAsChunks, stringifyArray } from '../../utils/utils';
@@ -23,8 +22,8 @@ const evmLogToTransfer = async ({
     fromEvmAddress,
     errorMessage: '',
     tokenId: address,
-    toId: toAddress === '' ? 'null' : toAddress,
-    fromId: fromAddress === '' ? 'null' : fromAddress,
+    toId: toAddress === '' ? '0x' : toAddress,
+    fromId: fromAddress === '' ? '0x' : fromAddress,
     // feeAmount: BigNumber.from(signedData.fee.partialFee).toString(),
     feeAmount: '0', // TODO - process fee once signedData is available
     amount: '0',
