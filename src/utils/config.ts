@@ -12,6 +12,9 @@ if (!process.env.DB_USER) {
 if (!process.env.DB_PASSWORD) {
   throw new Error('DB_PASSWORD environment variable missing!')
 }
+if (!process.env.ADMIN_PASSWORD) {
+  throw new Error('ADMIN_PASSWORD environment variable missing!')
+}
 
 const toNumber = (defaultValue: number, value?: string): number => {
   if (!value) {
@@ -41,4 +44,5 @@ export default {
   dbUser: process.env.DB_USER!,
   dbPassword: process.env.DB_PASSWORD!,
   dbName: process.env.DB_NAME!,
+  adminPassword: process.env.ADMIN_PASSWORD!,
 };

@@ -11,6 +11,7 @@ import {
 import { ensure, toChecksumAddress } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
 import { verifiedContractRepository } from '..';
+import { Op } from 'sequelize';
 
 interface Bytecode {
   bytecode: string | null;
@@ -18,6 +19,10 @@ interface Bytecode {
 
 interface ContractVerificationID {
   id: string | null;
+}
+
+interface ContractVerifiedID {
+  id: string;
 }
 
 interface ContracVerificationInsert {
@@ -170,6 +175,7 @@ export const contractVerificationRequestInsert = async ({
 
 export const verify = async (
   verification: AutomaticContractVerificationReq,
+  backup = true
 ): Promise<void> => {
   checkLicense(verification);
 
@@ -191,7 +197,6 @@ export const verify = async (
   const { type, data } = await resolveContractData(verification.address, abi);
 
   // Inserting contract into verified contract table
-  const timestamp = Date.now();
   const verified = await insertVerifiedContract({
     ...verification,
     id: verification.address,
@@ -199,11 +204,10 @@ export const verify = async (
     type,
     abi: fullAbi,
     data: JSON.stringify(data),
-    optimization: verification.optimization === 'true',
-    timestamp,
+    optimization: verification.optimization === 'true'
   });
 
-  if (verified) {
+  if (verified && backup) {
     // Inserting contract into API database as backup
     try {
       await verifiedContractRepository.create({
@@ -216,8 +220,7 @@ export const verify = async (
         runs: verification.runs,
         source: JSON.parse(verification.source),
         target: verification.target,
-        license: verification.license.toString(),
-        timestamp,
+        license: verification.license.toString()
       });
     } catch (err: any) {
       console.error(err);
@@ -239,7 +242,7 @@ export const contractVerificationStatus = async (
   return !!verificationRequest && !!verificationRequest.id;
 };
 
-export const findVeririedContract = async (
+export const findVerifiedContract = async (
   id: string,
 ): Promise<VerifiedContract | null> => {
   const verifiedContract = await query<VerifiedContract | null>(
@@ -264,3 +267,53 @@ export const findVeririedContract = async (
   );
   return verifiedContract;
 };
+
+export const findAllVerifiedContractIds = async (): Promise<string[]> => {
+  const QUERY_LIMIT = 500;
+  const allVerifiedContracts: ContractVerifiedID[] = [];
+  let moreAvailable = true;
+  let currIndex = 0;
+
+  while (moreAvailable) {
+    const verifiedContracts = await query<ContractVerifiedID[] | null>(
+      'verifiedContracts',
+      `query {
+        verifiedContracts(limit: ${QUERY_LIMIT}, offset: ${currIndex}) { id }
+      }`
+    );
+    if (!verifiedContracts || !verifiedContracts.length || verifiedContracts.length < QUERY_LIMIT) {
+      moreAvailable = false;
+    }
+    allVerifiedContracts.push(...verifiedContracts!);
+    currIndex += QUERY_LIMIT;
+  }
+  return allVerifiedContracts.map((contract) => contract.id);
+};
+
+export const verifyPendingFromBackup = async (): Promise<string> => {
+  const verifiedIds = await findAllVerifiedContractIds();
+
+  const verifiedPending = await verifiedContractRepository.findAll({ 
+    where: { address: { [Op.notIn]: verifiedIds } } 
+  });
+  console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
+
+  for (const verifiedContract of verifiedPending) {
+    await verify({
+      name: verifiedContract.name,
+      runs: verifiedContract.runs,
+      source: JSON.stringify(verifiedContract.source),
+      target: verifiedContract.target as Target,
+      address: verifiedContract.address,
+      filename: verifiedContract.filename,
+      license: verifiedContract.license as License,
+      arguments: JSON.stringify(verifiedContract.args),
+      optimization: verifiedContract.optimization.toString(),
+      compilerVersion: verifiedContract.compilerVersion,
+      timestamp: verifiedContract.timestamp
+    }, false);
+  }
+
+  console.log('Finished verifying from backup');
+  return "Verification from backup finished";
+}
