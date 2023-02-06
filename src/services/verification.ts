@@ -10,6 +10,7 @@ import {
 } from '../utils/types';
 import { ensure, toChecksumAddress } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
+import { verifiedContractRepository } from '..';
 
 interface Bytecode {
   bytecode: string | null;
@@ -63,6 +64,7 @@ interface UpdateContract {
   compilerVersion: string;
   type: ContractType;
   data: string;
+  timestamp: number;
 }
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
@@ -105,9 +107,10 @@ const insertVerifiedContract = async ({
   target,
   type,
   data,
-  license
-}: UpdateContract): Promise<void> => {
-  await mutate(`
+  license,
+  timestamp
+}: UpdateContract): Promise<boolean> => {
+  const result = await mutate<{saveVerifiedContract: boolean}>(`
     mutation {
       saveVerifiedContract(
         id: "${id}",
@@ -123,10 +126,11 @@ const insertVerifiedContract = async ({
         type: "${type}",
         contractData: ${JSON.stringify(data)}
         license: "${license}",
-        timestamp: ${Date.now()}
+        timestamp: ${timestamp}
       )
     }
   `);
+  return result?.saveVerifiedContract || false;
 };
 
 export const contractVerificationRequestInsert = async ({
@@ -187,7 +191,8 @@ export const verify = async (
   const { type, data } = await resolveContractData(verification.address, abi);
 
   // Inserting contract into verified contract table
-  await insertVerifiedContract({
+  const timestamp = Date.now();
+  const verified = await insertVerifiedContract({
     ...verification,
     id: verification.address,
     args,
@@ -195,7 +200,29 @@ export const verify = async (
     abi: fullAbi,
     data: JSON.stringify(data),
     optimization: verification.optimization === 'true',
+    timestamp,
   });
+
+  if (verified) {
+    // Inserting contract into API database as backup
+    try {
+      await verifiedContractRepository.create({
+        address: verification.address,
+        args: JSON.parse(verification.arguments),
+        compilerVersion: verification.compilerVersion,
+        filename: verification.filename,
+        name: verification.name,
+        optimization: verification.optimization === 'true',
+        runs: verification.runs,
+        source: JSON.parse(verification.source),
+        target: verification.target,
+        license: verification.license.toString(),
+        timestamp,
+      });
+    } catch (err: any) {
+      console.error(err);
+    }
+  }
 };
 
 export const contractVerificationStatus = async (

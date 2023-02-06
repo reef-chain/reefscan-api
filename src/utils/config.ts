@@ -1,7 +1,16 @@
 require('dotenv').config();
 
-if(!process.env.NETWORK){
+if (!process.env.NETWORK) {
   throw new Error('NETWORK environment variable missing!')
+}
+if (!process.env.DB_HOST) {
+  throw new Error('DB_HOST environment variable missing!')
+}
+if (!process.env.DB_USER) {
+  throw new Error('DB_USER environment variable missing!')
+}
+if (!process.env.DB_PASSWORD) {
+  throw new Error('DB_PASSWORD environment variable missing!')
 }
 
 const toNumber = (defaultValue: number, value?: string): number => {
@@ -28,4 +37,8 @@ export default {
   jwtSecret: process.env.JWT_SECRET || '',
   chunkSize: toNumber(1024, process.env.CHUNK_SIZE),
   mutationSize: toNumber(100, process.env.MUTATION_SIZE),
+  dbHost: process.env.DB_HOST!,
+  dbUser: process.env.DB_USER!,
+  dbPassword: process.env.DB_PASSWORD!,
+  dbName: process.env.DB_NAME!,
 };
