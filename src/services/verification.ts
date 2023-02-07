@@ -8,10 +8,13 @@ import {
   License,
   Target,
 } from '../utils/types';
-import { ensure, toChecksumAddress } from '../utils/utils';
+import { buildBatches, ensure, toChecksumAddress } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
 import { verifiedContractRepository } from '..';
 import { Op } from 'sequelize';
+import fs from 'fs';
+import config from '../utils/config';
+import { VerifiedContractEntity } from '../db/VerifiedContract.db';
 
 interface Bytecode {
   bytecode: string | null;
@@ -316,4 +319,45 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
 
   console.log('Finished verifying from backup');
   return "Verification from backup finished";
+}
+
+export const importBackupFiles = async (): Promise<void> => {
+  let fileExists = true;
+  let fileIndex = 1;
+  while (fileExists) {
+    const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
+    if (fs.existsSync(fileName)) {
+      const file = fs.readFileSync(fileName, "utf8");
+      const contractBatch: VerifiedContractEntity[] = JSON.parse(file);
+      await verifiedContractRepository.bulkCreate(contractBatch);
+      fileIndex++;
+    } else {
+      fileExists = false;
+    }
+  }
+}
+
+export const exportBackupFiles = async (): Promise<void> => {
+  const verifiedContracts = await verifiedContractRepository.findAll();
+
+  // Delete old backup files
+  let fileExists = true;
+  let fileIndex = 1;
+  while (fileExists) {
+    const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
+    if (fs.existsSync(fileName)) {
+      fs.unlinkSync(fileName);
+      fileIndex++;
+    } else {
+      fileExists = false;
+    }
+  }
+
+  // Write new backup files
+  const batches = buildBatches<VerifiedContractEntity>(verifiedContracts, 50);
+  await Promise.all(batches.map(async (contracts: VerifiedContractEntity[], index: number) => {
+    const fileName = `backup/verified_${config.network}_${String(index + 1).padStart(3, "0")}.json`;
+    await fs.promises.writeFile(fileName, JSON.stringify(contracts));
+  }));
+  console.log('Finished exporting backup');
 }

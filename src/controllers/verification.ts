@@ -3,6 +3,7 @@ import { authenticationToken } from '../services/utils';
 import {
   contractVerificationRequestInsert,
   contractVerificationStatus,
+  exportBackupFiles,
   findVerifiedContract,
   verify,
   verifyPendingFromBackup,
@@ -98,3 +99,11 @@ export const verifyFromBackup = async (
   verifyPendingFromBackup();
   res.send("Verification process started");
 };
+
+export const exportBackup = async (
+  _req: AppRequest<{}>,
+  res: Response,
+) => {
+  exportBackupFiles();
+  res.send("Backup export process started");
+}
