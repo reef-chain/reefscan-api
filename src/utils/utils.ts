@@ -128,10 +128,10 @@ export const trim = (str: string, length = 1000) => {
   return str.substring(0, length) + "...";
 }
 
-export const buildBatches = <T>(array: T[]) => {
+export const buildBatches = <T>(array: T[], size: number) => {
   return array.reduce((acc, _, index) => {
-    if (index % config.mutationSize === 0) {
-      acc.push(array.slice(index, index + config.mutationSize));
+    if (index % size === 0) {
+      acc.push(array.slice(index, index + size));
     }
     return acc;
   }, [] as T[][]);

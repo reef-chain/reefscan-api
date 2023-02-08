@@ -1,3 +1,4 @@
+import config from "../../utils/config";
 import { mutate } from "../../utils/connector";
 import { EvmLogWithDecodedEvent, TokenHolder, TokenHolderHead, TokenType } from "../../utils/types";
 import { balanceOf, balanceOfErc1155, buildBatches, dropDuplicatesMultiKey, findNativeAddress, removeUndefinedItem, resolvePromisesAsChunks, stringifyArray } from "../../utils/utils";
@@ -80,7 +81,7 @@ export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]):
 
 export const insertTokenHolders = async (tokenHolders: TokenHolder[]): Promise<boolean> => {
   if (!tokenHolders.length) return true;
-  const batches = buildBatches(tokenHolders);
+  const batches = buildBatches(tokenHolders, config.mutationSize);
   const results = await Promise.all(batches.map((batch) => mutate<boolean>(
     `mutation {
       saveTokenHolders(

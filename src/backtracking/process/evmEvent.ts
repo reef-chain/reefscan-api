@@ -1,3 +1,4 @@
+import config from "../../utils/config";
 import { mutate } from "../../utils/connector";
 import { EvmEventDataParsed, EvmLogWithDecodedEvent } from "../../utils/types";
 import { buildBatches, stringifyArray } from "../../utils/utils";
@@ -12,7 +13,7 @@ export const isErc1155TransferBatchEvent = ({ decodedEvent, type }: EvmLogWithDe
 
 export const updateEvmEventsDataParsed = async (evmEvents: EvmEventDataParsed[]): Promise<boolean> => {
     if (!evmEvents.length) return true;
-    const batches = buildBatches<EvmEventDataParsed>(evmEvents);
+    const batches = buildBatches<EvmEventDataParsed>(evmEvents, config.mutationSize);
     const results = await Promise.all(batches.map((batch) => mutate<boolean>(
       `mutation {
         updateEvmEventsDataParsed(

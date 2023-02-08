@@ -3,8 +3,10 @@ import { authenticationToken } from '../services/utils';
 import {
   contractVerificationRequestInsert,
   contractVerificationStatus,
-  findVeririedContract,
+  exportBackupToFiles,
+  findVerifiedContract,
   verify,
+  verifyPendingFromBackup,
 } from '../services/verification';
 import {
   AppRequest,
@@ -27,6 +29,7 @@ export const submitVerification = async (
   validateData(req.body, automaticVerificationValidator);
 
   req.body.address = toChecksumAddress(req.body.address);
+  req.body.timestamp = Date.now();
 
   await verify(req.body)
     .catch(async (err) => {
@@ -82,9 +85,25 @@ export const getVerifiedContract = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-  const contract = await findVeririedContract(
+  const contract = await findVerifiedContract(
     toChecksumAddress(req.params.address),
   );
   ensure(!!contract, 'Contract does not exist');
   res.send(contract);
 };
+
+export const verifyFromBackup = async (
+  _req: AppRequest<{}>,
+  res: Response,
+) => {
+  verifyPendingFromBackup();
+  res.send("Verification process started");
+};
+
+export const exportBackup = async (
+  _req: AppRequest<{}>,
+  res: Response,
+) => {
+  exportBackupToFiles();
+  res.send("Backup export process started");
+}
