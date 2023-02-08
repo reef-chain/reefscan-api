@@ -143,6 +143,7 @@ const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq>
     optimization: optimizationSchema,
     source: sourceSchema,
     target: targetSchema,
+    timestamp: { type: 'number' },
   },
   required: [
     'address',

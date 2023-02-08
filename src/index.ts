@@ -9,6 +9,9 @@ import { getReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
+import { sequelize } from './db/sequelize.db';
+import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
+import { importBackupFromFiles } from './services/verification';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
@@ -27,6 +30,10 @@ Sentry.setTag('network', config.network);
 const cors = require('cors');
 
 const app = express();
+
+export const verifiedContractRepository = config.network === 'mainnet' 
+  ? sequelize.getRepository(VerifiedContractMainnet) 
+  : sequelize.getRepository(VerifiedContractTestnet);
 
 // add sentry request handler
 app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
@@ -73,6 +80,10 @@ app.use(errorHandler);
 
 app.listen(config.httpPort, async () => {
   await getProvider().api.isReadyOrError;
+  await sequelize.sync();
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
+  if (process.env.IMPORT_BACKUP_ON_START === 'true') {
+    importBackupFromFiles();
+  }
   backtrackEvents();
 });

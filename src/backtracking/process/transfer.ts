@@ -1,3 +1,4 @@
+import config from "../../utils/config";
 import { mutate } from '../../utils/connector';
 import { EvmLogWithDecodedEvent, Transfer } from '../../utils/types';
 import { buildBatches, findNativeAddress, resolvePromisesAsChunks, stringifyArray } from '../../utils/utils';
@@ -96,7 +97,7 @@ export const processTokenTransfers = async (evmLogs: EvmLogWithDecodedEvent[]): 
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<boolean> => {
   if (!transfers.length) return true;
-  const batches = buildBatches<Transfer>(transfers);
+  const batches = buildBatches<Transfer>(transfers, config.mutationSize);
   const results = await Promise.all(batches.map((batch) => mutate<boolean>(
     `mutation {
       saveTransfers(

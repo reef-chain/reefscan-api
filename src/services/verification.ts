@@ -8,8 +8,13 @@ import {
   License,
   Target,
 } from '../utils/types';
-import { ensure, toChecksumAddress } from '../utils/utils';
+import { buildBatches, ensure, toChecksumAddress } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
+import { verifiedContractRepository } from '..';
+import { Op } from 'sequelize';
+import fs from 'fs';
+import config from '../utils/config';
+import { VerifiedContractEntity } from '../db/VerifiedContract.db';
 
 interface Bytecode {
   bytecode: string | null;
@@ -17,6 +22,10 @@ interface Bytecode {
 
 interface ContractVerificationID {
   id: string | null;
+}
+
+interface ContractVerifiedID {
+  id: string;
 }
 
 interface ContracVerificationInsert {
@@ -63,6 +72,7 @@ interface UpdateContract {
   compilerVersion: string;
   type: ContractType;
   data: string;
+  timestamp: number;
 }
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
@@ -105,9 +115,10 @@ const insertVerifiedContract = async ({
   target,
   type,
   data,
-  license
-}: UpdateContract): Promise<void> => {
-  await mutate(`
+  license,
+  timestamp
+}: UpdateContract): Promise<boolean> => {
+  const result = await mutate<{saveVerifiedContract: boolean}>(`
     mutation {
       saveVerifiedContract(
         id: "${id}",
@@ -123,10 +134,11 @@ const insertVerifiedContract = async ({
         type: "${type}",
         contractData: ${JSON.stringify(data)}
         license: "${license}",
-        timestamp: ${Date.now()}
+        timestamp: ${timestamp}
       )
     }
   `);
+  return result?.saveVerifiedContract || false;
 };
 
 export const contractVerificationRequestInsert = async ({
@@ -166,7 +178,11 @@ export const contractVerificationRequestInsert = async ({
 
 export const verify = async (
   verification: AutomaticContractVerificationReq,
+  backup = true
 ): Promise<void> => {
+  const existing = await findVerifiedContract(verification.address);
+  if (existing) throw new Error('Contract already verified');
+
   checkLicense(verification);
 
   const args = verification.arguments;
@@ -187,15 +203,36 @@ export const verify = async (
   const { type, data } = await resolveContractData(verification.address, abi);
 
   // Inserting contract into verified contract table
-  await insertVerifiedContract({
+  const verified = await insertVerifiedContract({
     ...verification,
     id: verification.address,
     args,
     type,
     abi: fullAbi,
     data: JSON.stringify(data),
-    optimization: verification.optimization === 'true',
+    optimization: verification.optimization === 'true'
   });
+
+  if (verified && backup) {
+    // Inserting contract into API database as backup
+    try {
+      await verifiedContractRepository.create({
+        address: verification.address,
+        args: JSON.parse(verification.arguments),
+        compilerVersion: verification.compilerVersion,
+        filename: verification.filename,
+        name: verification.name,
+        optimization: verification.optimization === 'true',
+        runs: verification.runs,
+        source: JSON.parse(verification.source),
+        target: verification.target,
+        license: verification.license.toString(),
+        timestamp: verification.timestamp
+      });
+    } catch (err: any) {
+      console.error(err);
+    }
+  }
 };
 
 export const contractVerificationStatus = async (
@@ -212,7 +249,7 @@ export const contractVerificationStatus = async (
   return !!verificationRequest && !!verificationRequest.id;
 };
 
-export const findVeririedContract = async (
+export const findVerifiedContract = async (
   id: string,
 ): Promise<VerifiedContract | null> => {
   const verifiedContract = await query<VerifiedContract | null>(
@@ -237,3 +274,103 @@ export const findVeririedContract = async (
   );
   return verifiedContract;
 };
+
+export const findAllVerifiedContractIds = async (): Promise<string[]> => {
+  const QUERY_LIMIT = 500;
+  const allVerifiedContracts: ContractVerifiedID[] = [];
+  let moreAvailable = true;
+  let currIndex = 0;
+
+  while (moreAvailable) {
+    const verifiedContracts = await query<ContractVerifiedID[] | null>(
+      'verifiedContracts',
+      `query {
+        verifiedContracts(limit: ${QUERY_LIMIT}, offset: ${currIndex}) { id }
+      }`
+    );
+    if (!verifiedContracts || !verifiedContracts.length || verifiedContracts.length < QUERY_LIMIT) {
+      moreAvailable = false;
+    }
+    allVerifiedContracts.push(...verifiedContracts!);
+    currIndex += QUERY_LIMIT;
+  }
+  return allVerifiedContracts.map((contract) => contract.id);
+};
+
+export const verifyPendingFromBackup = async (): Promise<string> => {
+  const verifiedIds = await findAllVerifiedContractIds();
+
+  const verifiedPending = await verifiedContractRepository.findAll({ 
+    where: { address: { [Op.notIn]: verifiedIds } } 
+  });
+  console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
+
+  for (const verifiedContract of verifiedPending) {
+    try {
+      await verify({
+        name: verifiedContract.name,
+        runs: verifiedContract.runs,
+        source: JSON.stringify(verifiedContract.source),
+        target: verifiedContract.target as Target,
+        address: verifiedContract.address,
+        filename: verifiedContract.filename,
+        license: verifiedContract.license as License,
+        arguments: JSON.stringify(verifiedContract.args),
+        optimization: verifiedContract.optimization.toString(),
+        compilerVersion: verifiedContract.compilerVersion,
+        timestamp: verifiedContract.timestamp
+      }, false);
+    } catch (err: any) { 
+      console.error(err);
+    }
+  }
+
+  console.log('Finished verifying from backup');
+  return "Verification from backup finished";
+}
+
+export const importBackupFromFiles = async (): Promise<void> => {
+  await verifiedContractRepository.destroy({
+    where: {},
+    truncate: true
+  });
+
+  let fileExists = true;
+  let fileIndex = 1;
+  while (fileExists) {
+    const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
+    if (fs.existsSync(fileName)) {
+      const file = fs.readFileSync(fileName, "utf8");
+      const contractBatch: VerifiedContractEntity[] = JSON.parse(file);
+      verifiedContractRepository.bulkCreate(contractBatch);
+      fileIndex++;
+    } else {
+      fileExists = false;
+    }
+  }
+}
+
+export const exportBackupToFiles = async (): Promise<void> => {
+  const verifiedContracts = await verifiedContractRepository.findAll();
+
+  // Delete old backup files
+  let fileExists = true;
+  let fileIndex = 1;
+  while (fileExists) {
+    const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
+    if (fs.existsSync(fileName)) {
+      fs.unlinkSync(fileName);
+      fileIndex++;
+    } else {
+      fileExists = false;
+    }
+  }
+
+  // Write new backup files
+  const batches = buildBatches<VerifiedContractEntity>(verifiedContracts, 50);
+  await Promise.all(batches.map(async (contracts: VerifiedContractEntity[], index: number) => {
+    const fileName = `backup/verified_${config.network}_${String(index + 1).padStart(3, "0")}.json`;
+    await fs.promises.writeFile(fileName, JSON.stringify(contracts));
+  }));
+  console.log('Finished exporting backup');
+}

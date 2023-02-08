@@ -29,6 +29,10 @@
     "jsonwebtoken": "^9.0.0",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.1",
+    "pg": "^8.9.0",
+    "reflect-metadata": "^0.1.13",
+    "sequelize": "^6.28.0",
+    "sequelize-typescript": "^2.1.5",
     "solc": "^0.8.11"
   },
   "devDependencies": {
@@ -37,6 +41,8 @@
     "@types/jsonwebtoken": "^9.0.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.6",
+    "@types/pg": "^8.6.6",
+    "@types/sequelize": "^4.28.14",
     "@typescript-eslint/eslint-plugin": "^5.27.1",
     "chai": "^4.3.4",
     "eslint": "^8.6.0",
