@@ -180,6 +180,9 @@ export const verify = async (
   verification: AutomaticContractVerificationReq,
   backup = true
 ): Promise<void> => {
+  const existing = await findVerifiedContract(verification.address);
+  if (existing) throw new Error('Contract already verified');
+
   checkLicense(verification);
 
   const args = verification.arguments;
@@ -223,7 +226,8 @@ export const verify = async (
         runs: verification.runs,
         source: JSON.parse(verification.source),
         target: verification.target,
-        license: verification.license.toString()
+        license: verification.license.toString(),
+        timestamp: verification.timestamp
       });
     } catch (err: any) {
       console.error(err);
@@ -302,26 +306,35 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
   console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
 
   for (const verifiedContract of verifiedPending) {
-    await verify({
-      name: verifiedContract.name,
-      runs: verifiedContract.runs,
-      source: JSON.stringify(verifiedContract.source),
-      target: verifiedContract.target as Target,
-      address: verifiedContract.address,
-      filename: verifiedContract.filename,
-      license: verifiedContract.license as License,
-      arguments: JSON.stringify(verifiedContract.args),
-      optimization: verifiedContract.optimization.toString(),
-      compilerVersion: verifiedContract.compilerVersion,
-      timestamp: verifiedContract.timestamp
-    }, false);
+    try {
+      await verify({
+        name: verifiedContract.name,
+        runs: verifiedContract.runs,
+        source: JSON.stringify(verifiedContract.source),
+        target: verifiedContract.target as Target,
+        address: verifiedContract.address,
+        filename: verifiedContract.filename,
+        license: verifiedContract.license as License,
+        arguments: JSON.stringify(verifiedContract.args),
+        optimization: verifiedContract.optimization.toString(),
+        compilerVersion: verifiedContract.compilerVersion,
+        timestamp: verifiedContract.timestamp
+      }, false);
+    } catch (err: any) { 
+      console.error(err);
+    }
   }
 
   console.log('Finished verifying from backup');
   return "Verification from backup finished";
 }
 
-export const importBackupFiles = async (): Promise<void> => {
+export const importBackupFromFiles = async (): Promise<void> => {
+  await verifiedContractRepository.destroy({
+    where: {},
+    truncate: true
+  });
+
   let fileExists = true;
   let fileIndex = 1;
   while (fileExists) {
@@ -329,7 +342,7 @@ export const importBackupFiles = async (): Promise<void> => {
     if (fs.existsSync(fileName)) {
       const file = fs.readFileSync(fileName, "utf8");
       const contractBatch: VerifiedContractEntity[] = JSON.parse(file);
-      await verifiedContractRepository.bulkCreate(contractBatch);
+      verifiedContractRepository.bulkCreate(contractBatch);
       fileIndex++;
     } else {
       fileExists = false;
@@ -337,7 +350,7 @@ export const importBackupFiles = async (): Promise<void> => {
   }
 }
 
-export const exportBackupFiles = async (): Promise<void> => {
+export const exportBackupToFiles = async (): Promise<void> => {
   const verifiedContracts = await verifiedContractRepository.findAll();
 
   // Delete old backup files

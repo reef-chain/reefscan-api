@@ -93,3 +93,31 @@ string
 | -------------- | :----: |
 | usd            | number |
 | usd_24h_change | number |
+
+
+## Verify all from backup
+Triggers verification for contracts stored in backup database.
+This end point is protected by admin password.
+
+**URL** : `/api/verificator/verify-from-backup`
+
+**Method** : `POST`
+
+**Request body**
+| Name           |  Type  |
+| -------------- | :----: |
+| password       | string |
+
+
+## Export backup
+Saves backup database verified contracts into local files. This files can be used to populate the database on startup if env variable `IMPORT_BACKUP_ON_START` is set to true.
+This end point is protected by admin password.
+
+**URL** : `/api/verificator/export-backup`
+
+**Method** : `POST`
+
+**Request body**
+| Name           |  Type  |
+| -------------- | :----: |
+| password       | string |
