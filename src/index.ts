@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import config from './utils/config';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
+import updateTokenIconRouter from './routes/updateTokenIcon';
 import { getReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
@@ -46,6 +47,7 @@ app.use(morgan('dev'));
 
 app.use('/api', contractRouter);
 app.use('/api/verificator', verificationRouter);
+app.use('/api/updateTokenIcon',updateTokenIconRouter);
 
 app.get('/api/price/reef', async (_, res: Response, next: NextFunction) => {
   try {
