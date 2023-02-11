@@ -80,9 +80,9 @@ app.use(errorHandler);
 
 app.listen(config.httpPort, async () => {
   await getProvider().api.isReadyOrError;
-  await sequelize.sync();
+  await sequelize.sync({ force: config.dropTablesOnStart });
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
-  if (process.env.IMPORT_BACKUP_ON_START === 'true') {
+  if (config.importTablesOnStart) {
     importBackupFromFiles();
   }
   backtrackEvents();

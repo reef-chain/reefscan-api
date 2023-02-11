@@ -235,6 +235,33 @@ export const verify = async (
   }
 };
 
+export const updateVerifiedContractData = async (
+  id: string,
+  data: any
+): Promise<boolean> => {
+  // Updating verified contract data
+  const response = await mutate<any>(`
+    mutation {
+      updateVerifiedContractData(
+        id: "${id}",
+        contractData: ${JSON.stringify(JSON.stringify(data))}
+      )
+    }
+  `);
+  const success = response?.updateVerifiedContractData || false;
+
+  if (success)  {
+    // Updating contract into API database as backup
+    try {
+      // TODO
+    } catch (err: any) {
+      console.error(err);
+    }
+  }
+
+  return success;
+};
+
 export const contractVerificationStatus = async (
   id: string,
 ): Promise<boolean> => {

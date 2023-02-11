@@ -45,4 +45,6 @@ export default {
   dbPassword: process.env.DB_PASSWORD!,
   dbName: process.env.DB_NAME!,
   adminPassword: process.env.ADMIN_PASSWORD!,
+  importTablesOnStart: process.env.IMPORT_TABLES_ON_START === 'true',
+  dropTablesOnStart: process.env.DROP_TABLES_ON_START === 'true',
 };
