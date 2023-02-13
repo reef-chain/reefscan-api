@@ -178,7 +178,8 @@ export const contractVerificationRequestInsert = async ({
 
 export const verify = async (
   verification: AutomaticContractVerificationReq,
-  backup = true
+  backup = true,
+  contractData = null
 ): Promise<void> => {
   const existing = await findVerifiedContract(verification.address);
   if (existing) throw new Error('Contract already verified');
@@ -227,7 +228,8 @@ export const verify = async (
         source: JSON.parse(verification.source),
         target: verification.target,
         license: verification.license.toString(),
-        timestamp: verification.timestamp
+        timestamp: verification.timestamp,
+        contractData: contractData || data
       });
     } catch (err: any) {
       console.error(err);
@@ -253,7 +255,18 @@ export const updateVerifiedContractData = async (
   if (success)  {
     // Updating contract into API database as backup
     try {
-      // TODO
+      const verifiedBackup = await verifiedContractRepository.findByPk(id);
+      if (verifiedBackup) {
+        for (const key in data) {
+          if (data.hasOwnProperty(key)) {
+            (verifiedBackup.contractData as any)[key] = data[key];
+          }
+        }
+        verifiedContractRepository.update(
+          { contractData: verifiedBackup.contractData },
+          { where: {address: id} }
+        );
+      }
     } catch (err: any) {
       console.error(err);
     }
@@ -324,6 +337,7 @@ export const findAllVerifiedContractIds = async (): Promise<string[]> => {
   return allVerifiedContracts.map((contract) => contract.id);
 };
 
+// Verify in Squid all contracts from backup database (only the ones that are not already verified)
 export const verifyPendingFromBackup = async (): Promise<string> => {
   const verifiedIds = await findAllVerifiedContractIds();
 
@@ -346,7 +360,7 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
         optimization: verifiedContract.optimization.toString(),
         compilerVersion: verifiedContract.compilerVersion,
         timestamp: verifiedContract.timestamp
-      }, false);
+      }, false, verifiedContract.contractData);
     } catch (err: any) { 
       console.error(err);
     }
@@ -356,6 +370,54 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
   return "Verification from backup finished";
 }
 
+// Gets verified contracts from Squid and inserts them into backup database
+export const createBackupFromSquid = async (): Promise<void> => {
+  await verifiedContractRepository.destroy({
+    where: {},
+    truncate: true
+  });
+
+  const QUERY_LIMIT = 50;
+  let moreAvailable = true;
+  let currIndex = 0;
+
+  while (moreAvailable) {
+    const verifiedContracts = await query<any[] | null>(
+      'verifiedContracts',
+      `query {
+        verifiedContracts(limit: ${QUERY_LIMIT}, offset: ${currIndex}) { 
+          id
+          args
+          compilerVersion
+          filename
+          name
+          optimization
+          runs
+          source
+          target
+          license
+          contractData
+          timestamp
+        }
+      }`
+    )
+    if (!verifiedContracts || !verifiedContracts.length) {
+      moreAvailable = false;
+    } else {
+      moreAvailable = verifiedContracts.length === QUERY_LIMIT;
+      await verifiedContractRepository.bulkCreate(
+        verifiedContracts.map((contract) => ({
+          ...contract, 
+          address: contract.id,
+          timestamp: new Date(contract.timestamp).getTime()
+        }))
+      );
+      currIndex += QUERY_LIMIT;
+    }
+  }
+}
+
+// Imports verified contracts from JSON files to backup database
 export const importBackupFromFiles = async (): Promise<void> => {
   await verifiedContractRepository.destroy({
     where: {},
@@ -377,6 +439,7 @@ export const importBackupFromFiles = async (): Promise<void> => {
   }
 }
 
+// Exports verified contracts from backup database to JSON files
 export const exportBackupToFiles = async (): Promise<void> => {
   const verifiedContracts = await verifiedContractRepository.findAll();
 

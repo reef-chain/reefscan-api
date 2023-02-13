@@ -11,7 +11,7 @@ import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
-import { importBackupFromFiles } from './services/verification';
+import { createBackupFromSquid, importBackupFromFiles, updateVerifiedContractData } from './services/verification';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
@@ -84,6 +84,8 @@ app.listen(config.httpPort, async () => {
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
   if (config.importTablesOnStart) {
     importBackupFromFiles();
+  } else if (config.createBackupFromSquidOnStart) {
+    createBackupFromSquid();
   }
   backtrackEvents();
 });

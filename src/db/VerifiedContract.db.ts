@@ -38,6 +38,9 @@ export class VerifiedContractEntity extends Model<Partial<VerifiedContractEntity
   @Column(DataType.STRING)
   license!: string;
 
+  @Column(DataType.JSON)
+  contractData!: any;
+
   @Column(DataType.DOUBLE)
   timestamp!: number;
 }
