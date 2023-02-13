@@ -5,10 +5,10 @@ interface UpdateContract {
     iconUrl: String;
   }
 
-export const uploadAndInsert =  async (file)=>{   
+export const upload =  async (file)=>{   
     const formData = new FormData()
-    const projectId = '2LVJclw3MbzDMPhL08X7C8Tgpp2'
-    const projectSecret = 'b4abfdc6b75a4e522cd6524e17cf2a3a'
+    const projectId = process.env.IPFS_PROJECT_ID
+    const projectSecret = process.env.IPFS_PROJECT_SECRET
     formData.append('file', file)
     try {
       const response = await axios.post(
@@ -21,13 +21,13 @@ export const uploadAndInsert =  async (file)=>{
           },
         }
       )
-    insertTokenHash(response.data.Hash);
+    return response.data.Hash;
     } catch (error) {
       console.error(error)
     }
 }
 
-const insertTokenHash = async ({
+export const insertTokenHash = async ({
  iconUrl
   }: UpdateContract): Promise<boolean> => {
     const result = await mutate<{saveVerifiedContract: boolean}>(`
