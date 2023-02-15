@@ -15,6 +15,7 @@ interface VerifiedContract {
 interface SignedMessageRequest {
   signMsg: JSON;
   file: File;
+  signature: string;
 }
 
 export const findVerifiedContract = async (
@@ -72,7 +73,7 @@ export const uploadTokenIcon = async (
     }
 
     //file is same - now checking if owner signed message or not
-    const signerAddress = ethers.utils.verifyMessage(req.body.signMsg['data'], req.body['signature']);
+    const signerAddress = ethers.utils.verifyMessage(JSON.stringify(req.body.signMsg), ethers.utils.toUtf8Bytes(req.body.signature));
 
     const contract = getVerifiedContract(contractAddress);
     const ownerOfContract = contract['owner'];
