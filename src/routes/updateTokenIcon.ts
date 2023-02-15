@@ -4,6 +4,6 @@ import { uploadTokenIcon } from '../controllers/updateTokenIcon';
 
 const router = Router();
 
-router.post('/:address', asyncHandler(uploadTokenIcon));
+router.post('/', asyncHandler(uploadTokenIcon));
 
 export default router;

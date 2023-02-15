@@ -3,15 +3,18 @@ import { query } from '../utils/connector';
 import { AppRequest } from '../utils/types';
 import { ensure, toChecksumAddress } from '../utils/utils';
 import ethers from 'ethers';
-import { upload , insertTokenHash } from '../services/updateTokenIcon';
-import { exportBackupToFiles, verifyPendingFromBackup } from '../services/verification';
-import { Provider } from "@reef-defi/evm-provider";
-import { WsProvider } from "@polkadot/rpc-provider";
+import { upload } from '../services/updateTokenIcon';
+import { updateVerifiedContractData } from '../services/verification';
 
 interface VerifiedContract {
   signer: JSON;
   iconUrl: String;
   id:String;
+}
+
+interface SignedMessageRequest {
+  signMsg: JSON;
+  file: File;
 }
 
 export const findVerifiedContract = async (
@@ -31,65 +34,53 @@ export const findVerifiedContract = async (
   return verifiedContract;
 };
 
+const generateSHA256Hash=(data)=>{
+  const buffer = new Uint8Array(data)
+  return crypto.subtle.digest('SHA-256', buffer).then((hashBuffer) => {
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+    return hashHex
+  })
+}
+
+const getVerifiedContract = async (
+  contractId
+) => {
+  const contract = await findVerifiedContract(
+    toChecksumAddress(contractId),
+  );
+  ensure(!!contract, 'Contract does not exist');
+  return contract;
+};
+
 export const uploadTokenIcon = async (
-    req: AppRequest<{}>,
+    req: AppRequest<SignedMessageRequest>,
     res: Response,
   ) => {
-    const contractAddress = toChecksumAddress(req.params.address);
-    const message = contractAddress;
-    const signedMessage = req.body['signedMessage'];
+    const contractAddress = toChecksumAddress(req.body.signMsg['contractAddress']);
+    const fileHash = req.body.signMsg['fileHash'];
 
-    // Checking if user signed message
-    const signerAddress = ethers.utils.verifyMessage(message, signedMessage);
-    ensure(signerAddress !== req.body['signer'], 'The signerAddress does not match the provided address');
+    //checking if the file sent is the one which was hashed earlier
+    const file = req.body.file;
+    const calculatedHash = generateSHA256Hash(file);
 
-    // Checking if pending status for this contract address is in the local database
-    await verifyPendingFromBackup();
+    //if hash is not same i.e different file uploaded
+    if(calculatedHash != fileHash){
+      return "invalid hash";
+    }
 
-    // Get verified contract from GraphQL
-    const contract = await findVerifiedContract(contractAddress);
-    ensure(!contract, 'Contract does not exist');
+    //file is same - now checking if owner signed message or not
+    const signerAddress = ethers.utils.verifyMessage(req.body.signMsg['data'], req.body['signature']);
     
-    //hard coding ABI here
-    const ABI = [
+    const contract = getVerifiedContract(contractAddress);
+    const ownerOfContract = contract['owner'];
 
-    ]
-
-    //Setting network
-    let URL = '';
-    if (process.env.NETWORK === 'mainnet') {
-        URL = process.env.NODE_URL_TESTNET || '';
-    } else {
-        URL = process.env.NODE_URL_MAINNET || '';
-    }
-
-    // Check if contract has an icon URL and if not check the owner
-    if (!contract!.iconUrl) {
-
-       // Use the ABI to get the contract instance
-       const provider = new Provider({
-        provider: new WsProvider(URL),
-      });
-       const contractInstance = new ethers.Contract(contractAddress, ABI, provider);
- 
-       // Call the contract method to get the owner
-       const owner = await contractInstance.functions.owner();
- 
-       // Checking if signer and owner are equal
-      let ownerOfContract = ethers.utils.getAddress(owner);
-      if (ownerOfContract === req.body['signer']) {
-        // Upload to IPFS
-        const result = await upload(req.params.body!['file']);
-
-        // Save to GraphQL
-        await insertTokenHash(result);
-
-        // TODO: Save to local database
-        await exportBackupToFiles();
-
-        res.send(result);
-      } else {
-        res.send("You are not the owner");
-      }
-    }
+    if(signerAddress === ownerOfContract){
+      const ipfsHash = upload(file);
+      await updateVerifiedContractData(contractAddress,'ipfs://'+ipfsHash);
+      res.send('Updated token successfully');
+    } 
+    res.send('You are not owner of contract');
 };
