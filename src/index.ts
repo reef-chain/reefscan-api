@@ -10,6 +10,7 @@ import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
+import updateTokenIconRouter from './routes/updateTokenIcon';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
 import { createBackupFromSquid, importBackupFromFiles, updateVerifiedContractData } from './services/verification';
 
@@ -46,6 +47,7 @@ app.use(morgan('dev'));
 
 app.use('/api', contractRouter);
 app.use('/api/verificator', verificationRouter);
+app.use('/api/updateTokenIcon',updateTokenIconRouter);
 
 app.get('/api/price/reef', async (_, res: Response, next: NextFunction) => {
   try {
