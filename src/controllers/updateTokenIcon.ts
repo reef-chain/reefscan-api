@@ -6,6 +6,9 @@ import ethers from 'ethers';
 import { upload } from '../services/updateTokenIcon';
 import { updateVerifiedContractData } from '../services/verification';
 import { verifiedContractRepository } from '..';
+import config from '../utils/config';
+import { sequelize } from '../db/sequelize.db';
+import { uploadIconMainnet, uploadIconTestnet } from '../db/UploadIcon.db';
 
 interface SignerInterface {
   id: string;
@@ -23,6 +26,9 @@ interface SignedMessageRequest {
   signature: string;
 }
 
+const uploadIconRepository = config.network === 'mainnet' 
+  ? sequelize.getRepository(uploadIconMainnet) 
+  : sequelize.getRepository(uploadIconTestnet);
 
 const findVerifiedContract = async (
   id: string,
@@ -76,15 +82,17 @@ export const uploadTokenIcon = async (
   const file = req.body.file;
 
   // BLOCK REPETITIVE REQUESTS
+  const uploadIconBackup = await uploadIconRepository.findByPk(contractAddress);
   const verifiedBackup = await verifiedContractRepository.findByPk(contractAddress);
   try {
     // Check if the fileHash is already present in the localdb or not
     if (verifiedBackup) {
       if (verifiedBackup.contractData.fileHash === fileHash) {
         return res.status(400).json({ error: "This image is already token icon." });
-      } else if (verifiedBackup.contractData.pending) {
-        return res.status(400).json({ error: "A request to update the icon of this token is already pending." });
-      }
+      } 
+    }
+    if(uploadIconBackup && uploadIconBackup.pending){
+      res.status(403).json({error: "Same file is being uploaded"})
     }
   } catch (err: any) {
     console.error(err);
@@ -106,7 +114,7 @@ export const uploadTokenIcon = async (
   //file is same - now checking if the icon is already uploaded or not
   // to make it fast - checking it in localdb
   if(verifiedBackup?.contractData.iconUrl){
-    res.status(403).send({error: "icon url already present"});
+    res.status(403).json({error: "icon url already present"});
   } 
 
   // address of user who is trying to upload icon
@@ -115,12 +123,10 @@ export const uploadTokenIcon = async (
 
   if (signerAddress === contract?.signer.id) {
     // Add a new record to the local db with a pending status
-    await verifiedContractRepository.create({
+    await uploadIconRepository.create({
     address: contractAddress,
-    contractData: {
-      fileSize: file.size,
-      pending: true
-    }
+    filesize: file.size,
+    pending:true,
     });
 
     //obtain the ipfsHash by uploading the file
@@ -128,7 +134,7 @@ export const uploadTokenIcon = async (
     await updateVerifiedContractData(contractAddress, 'ipfs://' + ipfsHash);
 
      // When the file is uploaded, delete the pending status from the verifiedContractRepository
-      const pendingRecord = await verifiedContractRepository.findOne({ where: { address: contractAddress } });
+      const pendingRecord = await uploadIconRepository.findOne({ where: { address: contractAddress } });
       if (pendingRecord) {
         await verifiedContractRepository.destroy(pendingRecord.id);
       }
