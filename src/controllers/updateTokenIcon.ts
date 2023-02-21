@@ -30,26 +30,6 @@ const uploadIconRepository = config.network === 'mainnet'
   ? sequelize.getRepository(uploadIconMainnet) 
   : sequelize.getRepository(uploadIconTestnet);
 
-const findVerifiedContract = async (
-  id: string,
-): Promise<VerifiedContract | null> => {
-  const verifiedContract = await query<VerifiedContract | null>(
-    'verifiedContractById',
-    `query {
-      verifiedContractById(id: "${id}") {
-        id
-        contract {
-          signer{
-              id
-          }
-        }
-        type
-      }
-    }`
-  );
-  return verifiedContract;
-};
-
 const generateSHA256Hash = (data) => {
   const buffer = new Uint8Array(data)
   return crypto.subtle.digest('SHA-256', buffer).then((hashBuffer) => {
@@ -69,7 +49,7 @@ export const uploadTokenIcon = async (
   const contractAddress = toChecksumAddress(req.body.signMsg['contractAddress']);
 
   //fetching contract details
-  const contract = await findVerifiedContract(contractAddress);
+  const contract = await verifiedContractRepository.findByPk(contractAddress);
   if(contract === null){
     res.status(404);
   }
@@ -83,7 +63,7 @@ export const uploadTokenIcon = async (
 
   // BLOCK REPETITIVE REQUESTS
   const uploadIconBackup = await uploadIconRepository.findByPk(contractAddress);
-  const verifiedBackup = await verifiedContractRepository.findByPk(contractAddress);
+  const verifiedBackup = contract;
   try {
     // Check if the fileHash is already present in the localdb or not
     if (verifiedBackup) {
@@ -121,7 +101,7 @@ export const uploadTokenIcon = async (
   const signerAddress = ethers.utils.verifyMessage(JSON.stringify(req.body.signMsg), ethers.utils.toUtf8Bytes(req.body.signature));
 
 
-  if (signerAddress === contract?.signer.id) {
+  if (signerAddress === contract?.contractData.signer.id) {
     // Add a new record to the local db with a pending status
     await uploadIconRepository.create({
     address: contractAddress,

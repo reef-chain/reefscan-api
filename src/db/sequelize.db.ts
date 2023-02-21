@@ -1,6 +1,7 @@
 import { Sequelize } from "sequelize-typescript";
 import config from "../utils/config";
 import { VerifiedContractMainnet, VerifiedContractTestnet } from "./VerifiedContract.db";
+import { uploadIconMainnet, uploadIconTestnet } from "./UploadIcon.db";
 
 export const sequelize = new Sequelize(
   config.dbName,
@@ -9,7 +10,7 @@ export const sequelize = new Sequelize(
   {
     host: config.dbHost,
     dialect: "postgres",
-    models: [VerifiedContractMainnet, VerifiedContractTestnet],
+    models: [VerifiedContractMainnet, VerifiedContractTestnet,uploadIconMainnet,uploadIconTestnet],
     repositoryMode: true,
   }
 );
