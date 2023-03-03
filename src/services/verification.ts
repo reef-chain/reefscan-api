@@ -346,7 +346,9 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
   });
   console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
 
+  let count = 0;
   for (const verifiedContract of verifiedPending) {
+    console.log(`Verifying ${verifiedContract.address} [${++count}/${verifiedPending.length}]`)
     try {
       await verify({
         name: verifiedContract.name,
