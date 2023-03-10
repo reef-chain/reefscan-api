@@ -4,10 +4,10 @@ ENV NETWORK=mainnet
 
 RUN apt-get update && apt-get -y upgrade
 
-RUN mkdir /usr/src/app
+RUN mkdir /usr/app
 ##RUN mkdir /app && chown -R node:node /app
 
-WORKDIR /usr/src/app
+WORKDIR /usr/app
 
 ##RUN wget https://raw.githubusercontent.com/eficode/wait-for/v2.2.2/wait-for -O /wait-for && chmod +x /wait-for
 
