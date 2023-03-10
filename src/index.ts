@@ -5,13 +5,14 @@ import morgan from 'morgan';
 import config from './utils/config';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
-import { getReefPrice } from './services/utils';
+import { fetchReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
 import { createBackupFromSquid, importBackupFromFiles, updateVerifiedContractData } from './services/verification';
+import {getReefPrice} from "./routes/price";
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
@@ -44,17 +45,21 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan('dev'));
 
-app.use('/api', contractRouter);
-app.use('/api/verificator', verificationRouter);
+// app.use('/api', contractRouter);
+app.use('/', contractRouter);
+// app.use('/api/verificator', verificationRouter);
+app.use('/verificator', verificationRouter);
 
-app.get('/api/price/reef', async (_, res: Response, next: NextFunction) => {
+app.get('/api/price/fetch/reef', async (_, res: Response, next: NextFunction) => {
   try {
-    const price = await getReefPrice();
+    const price = await fetchReefPrice();
     res.send(price);
   } catch (err) {
     next(err);
   }
 });
+
+app.get('/price/reef', getReefPrice);
 
 // add sentry error handler
 app.use(

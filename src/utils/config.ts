@@ -27,7 +27,7 @@ const network = process.env.NETWORK || 'mainnet';
 const nodeWs = process.env[`NODE_URL_${network.toUpperCase()}`] || '';
 const graphqlApi = process.env[`GRAPHQL_API_${network.toUpperCase()}`] || '';
 
-console.log('NETWORK=', network, ' RPC=', nodeWs, ' API=', graphqlApi);
+console.log('NETWORK=', network, ' RPC=', nodeWs, ' API=', graphqlApi, ' DB=', process.env.DB_HOST);
 
 export default {
   httpPort: toNumber(3000, process.env.PORT),
