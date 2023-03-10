@@ -2,7 +2,7 @@
 
 ## Find contract
 
-**URL** : `/api/contract/:address`
+**URL** : `/contract/:address`
 
 **Method** : `GET`
 
@@ -21,7 +21,7 @@
 
 ## Get verification status
 
-**URL** : `/api/verificator/status`
+**URL** : `/verification/status`
 
 **Method** : `POST`
 
@@ -36,7 +36,7 @@ boolean
 
 ## Submit verification
 
-**URL** : `/api/verificator/submit-verification`
+**URL** : `/verification/submit`
 
 **Method** : `POST`
 
@@ -60,7 +60,7 @@ string
 
 ## Get verified contract
 
-**URL** : `/api/verificator/contract/:address`
+**URL** : `/verification/contract/:address`
 
 **Method** : `GET`
 
@@ -81,25 +81,12 @@ string
 | contractData        | JSON |
 | timestamp        | Date |
 
-## Get REEF price
-
-**URL** : `/api/price/reef`
-
-**Method** : `GET`
-
-**Return data** :
-
-| Name           |  Type  |
-| -------------- | :----: |
-| usd            | number |
-| usd_24h_change | number |
-
 
 ## Verify all from backup
 Triggers verification for contracts stored in backup database.
 This end point is protected by admin password.
 
-**URL** : `/api/verificator/verify-from-backup`
+**URL** : `/verification/verify-from-backup`
 
 **Method** : `POST`
 
@@ -113,7 +100,7 @@ This end point is protected by admin password.
 Saves backup database verified contracts into local files. This files can be used to populate the database on startup if env variable `IMPORT_BACKUP_ON_START` is set to true.
 This end point is protected by admin password.
 
-**URL** : `/api/verificator/export-backup`
+**URL** : `/verification/export-backup`
 
 **Method** : `POST`
 
@@ -121,3 +108,17 @@ This end point is protected by admin password.
 | Name           |  Type  |
 | -------------- | :----: |
 | password       | string |
+
+
+## Get REEF price
+
+**URL** : `/price/reef`
+
+**Method** : `GET`
+
+**Return data** :
+
+| Name           |  Type  |
+| -------------- | :----: |
+| usd            | number |
+| usd_24h_change | number |
