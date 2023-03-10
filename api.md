@@ -118,7 +118,8 @@ This end point is protected by admin password.
 
 **Return data** :
 
-| Name           |  Type  |
-| -------------- | :----: |
-| usd            | number |
-| usd_24h_change | number |
+| Name           |   Type    |
+|----------------|:---------:|
+| usd            |  number   |
+| usd_24h_change |  number   |
+| timestamp      | timestamp |
