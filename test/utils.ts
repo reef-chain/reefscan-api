@@ -44,10 +44,11 @@ export const sourceTester = async ({name, filename, sources, bytecode}: Contract
       target: "london",
       optimization: "true",
       runs: 200,
-
       address: "",
       arguments: "",
-      license: "unlicense"
+      license: "unlicense",
+      timestamp: new Date().getTime(),
+      blockHeight: 0,
     });
     return true;
   } catch (err) {
