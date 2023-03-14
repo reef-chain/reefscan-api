@@ -53,6 +53,7 @@ interface Compile {
   abi: ABI;
   fullAbi: {[filename: string]: ABI};
   fullBytecode: string;
+  fullRuntimeBytecode: string;
 }
 
 interface VerifyContract {
@@ -142,18 +143,24 @@ const compileContracts = async (name: string, filename: string, source: Source, 
     abi: compilerResult.contracts[filename][name].abi,
     fullAbi,
     fullBytecode: compilerResult.contracts[filename][name].evm.bytecode.object,
+    fullRuntimeBytecode: compilerResult.contracts[filename][name].evm.deployedBytecode.object
   };
 };
 
-export default async (deployedBytecode: string, {
-  name, filename, source, compilerVersion, target, optimization, runs,
-}: AutomaticContractVerificationReq): Promise<VerifyContract> => {
+export default async (
+  deployedBytecode: string, 
+  { name, filename, source, compilerVersion, target, optimization, runs }: AutomaticContractVerificationReq
+): Promise<VerifyContract> => {
   const src = JSON.parse(source);
-  const { abi, fullAbi, fullBytecode } = await compileContracts(name, filename, src, compilerVersion, target, optimization === 'true', runs);
-  const parsedBytecode = preprocess(fullBytecode);
+  const { abi, fullAbi, fullBytecode, fullRuntimeBytecode } = await compileContracts(name, filename, src, compilerVersion, target, optimization === 'true', runs);
   const rpcBytecode = preprocess(deployedBytecode);
+  let parsedBytecode = preprocess(fullBytecode);
+  if (parsedBytecode !== rpcBytecode) {
+    // If creation bytecode does not match, try runtime bytecode
+    parsedBytecode = preprocess(fullRuntimeBytecode);
+    ensure(parsedBytecode === rpcBytecode, 'Compiled bytecode is not the same as deployed one');
+  }
 
-  ensure(parsedBytecode === rpcBytecode, 'Compiled bytecode is not the same as deployed one');
   return {
     abi,
     fullAbi,

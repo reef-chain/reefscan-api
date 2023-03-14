@@ -107,6 +107,7 @@ export interface AutomaticContractVerificationReq {
   optimization: string;
   compilerVersion: string;
   timestamp: number;
+  blockHeight: number;
 }
 export type AutomaticContractVerificationKey =
   keyof AutomaticContractVerificationReq;

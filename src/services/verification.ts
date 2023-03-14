@@ -8,13 +8,14 @@ import {
   License,
   Target,
 } from '../utils/types';
-import { buildBatches, ensure, toChecksumAddress } from '../utils/utils';
+import { buildBatches, ensure, toChecksumAddress, wait } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
 import { verifiedContractRepository } from '..';
 import { Op } from 'sequelize';
 import fs from 'fs';
 import config from '../utils/config';
 import { VerifiedContractEntity } from '../db/VerifiedContract.db';
+import { getProvider } from '../utils/connector';
 
 interface Bytecode {
   bytecode: string | null;
@@ -98,8 +99,19 @@ const findContractBytecode = async (id: string): Promise<string> => {
       }
     }`
   );
-  ensure(!!contract && !!contract.bytecode, 'Contract does not exist', 404);
-  return contract!.bytecode!;
+  return contract && contract.bytecode ? contract.bytecode : '';
+};
+
+const getBlockHeight = async (): Promise<number> => {
+  const lastBlock = await query<Bytecode>(
+    'blocks',
+    `query {
+      blocks(limit:1, orderBy: height_DESC) {
+        height
+      }
+    }`
+  );
+  return lastBlock && lastBlock[0] && lastBlock[0].height ? lastBlock[0].height : 0;
 };
 
 const insertVerifiedContract = async ({
@@ -176,6 +188,28 @@ export const contractVerificationRequestInsert = async ({
   `);
 };
 
+export const contractInsert = async (
+  address: string,
+  bytecode: string,
+  signerAddress: string
+): Promise<void> => {
+  await mutate(`
+    mutation {
+      saveContract(
+        id: "${address}",
+        extrinsicId: "-1",
+        signerAddress: "${signerAddress}",
+        bytecode: "${bytecode}",
+        bytecodeContext: "",
+        bytecodeArguments: "",
+        gasLimit: "0",
+        storageLimit: "0",
+        timestamp: ${Date.now()}
+      )
+    }
+  `);
+};
+
 export const verify = async (
   verification: AutomaticContractVerificationReq,
   backup = true,
@@ -188,7 +222,37 @@ export const verify = async (
 
   const args = verification.arguments;
 
-  const deployedBytecode = await findContractBytecode(verification.address);
+  if (verification.blockHeight) {
+    // Wait until reach block height (if it is not too far away)
+    const startTime = Date.now();
+    while (true) {
+      const blockheight = await getBlockHeight();
+      if (blockheight >= verification.blockHeight // Block height reached
+        || blockheight + 500 < verification.blockHeight // Block height too far away
+        || Date.now() - startTime > 1000 * 60 * 50) { // Timeout of 5 minutes TODO
+        break;
+      }
+      await wait(10000);
+    }
+  }
+
+  let deployedBytecode = await findContractBytecode(verification.address);
+  if (deployedBytecode === '' && verification.blockHeight) {
+    // Try to find contract on chain, and insert it in explorer if exists
+    const account = await getProvider().api.query.evm.accounts(verification.address);
+    const codeHash = (account.toHuman() as any)?.contractInfo?.codeHash || undefined;
+    const maintainer = (account.toHuman() as any)?.contractInfo?.maintainer || undefined;
+    if (codeHash) {
+      const code = await getProvider().api.query.evm.codes(codeHash);
+      if (code?.toHuman()?.toString() !== '') {
+        const signer = maintainer ? await getProvider().api.query.evmAccounts.accounts(maintainer) : undefined;
+        await contractInsert(verification.address, code!.toHuman()!.toString(), signer && signer.toHuman() ? signer!.toHuman()!.toString() : '0x');
+        deployedBytecode = await findContractBytecode(verification.address);
+      }
+    }
+  }
+  ensure(deployedBytecode !== '', 'Contract does not exist', 404);
+
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, JSON.parse(args));
 
@@ -361,7 +425,8 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
         arguments: JSON.stringify(verifiedContract.args),
         optimization: verifiedContract.optimization.toString(),
         compilerVersion: verifiedContract.compilerVersion,
-        timestamp: verifiedContract.timestamp
+        timestamp: verifiedContract.timestamp,
+        blockHeight: 0,
       }, false, verifiedContract.contractData);
     } catch (err: any) { 
       console.error(err);

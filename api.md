@@ -53,6 +53,9 @@ boolean
 | arguments        | string |
 | optimization        | string |
 | compilerVersion        | string |
+| blockHeight | number |
+
+> `blockHeight` is an optional parameter. If set, the verification service will wait until block height is reached in the explorer. This is useful in case the verification is triggered programmatically on contract deployment, as it is possible that the contract creation has yet not been processed by the explorer application at the time the verification service is run.
 
 **Return data**:
 
