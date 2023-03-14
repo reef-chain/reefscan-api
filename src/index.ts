@@ -47,6 +47,7 @@ app.use(morgan('dev'));
 
 app.use('/contract', contractRouter);
 app.use('/verification', verificationRouter);
+app.use('/api/verification', verificationRouter);
 
 // app.get('/api/price/fetch/reef', async (_, res: Response, next: NextFunction) => {
 //   try {
