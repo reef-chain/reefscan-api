@@ -46,6 +46,7 @@ app.use(cors());
 app.use(morgan('dev'));
 
 app.use('/contract', contractRouter);
+app.use('/api/contract', contractRouter);
 app.use('/verification', verificationRouter);
 app.use('/api/verificator', verificationRouter);
 
