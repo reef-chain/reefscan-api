@@ -46,7 +46,9 @@ app.use(cors());
 app.use(morgan('dev'));
 
 app.use('/contract', contractRouter);
+app.use('/api/contract', contractRouter);
 app.use('/verification', verificationRouter);
+app.use('/api/verificator', verificationRouter);
 
 // app.get('/api/price/fetch/reef', async (_, res: Response, next: NextFunction) => {
 //   try {
@@ -81,8 +83,14 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
 
 app.use(errorHandler);
 
-app.listen(config.httpPort, async () => {
+const server = app.listen(config.httpPort, async () => {
   await getProvider().api.isReadyOrError;
+  try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
   await sequelize.sync({ force: config.dropTablesOnStart });
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
   if (config.importBackupOnStart) {
@@ -92,3 +100,31 @@ app.listen(config.httpPort, async () => {
   }
   backtrackEvents();
 });
+
+
+process.on('SIGTERM', shutDown);
+process.on('SIGINT', shutDown);
+
+let connections: any[] = [];
+
+server.on('connection', connection => {
+  connections.push(connection);
+  connection.on('close', () => connections = connections.filter(curr => curr !== connection));
+});
+
+function shutDown() {
+  console.log('Received kill signal, shutting down gracefully');
+  server.close(() => {
+    console.log('Closed out remaining connections');
+    sequelize.close();
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+
+  connections.forEach(curr => curr.end());
+  setTimeout(() => connections.forEach(curr => curr.destroy()), 5000);
+}
