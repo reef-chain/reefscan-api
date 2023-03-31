@@ -78,8 +78,8 @@ interface UpdateContract {
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
   const license = verification.license.replace(':', '').trim();
-  const validLicences = ['', 'none', 'unlicense', 'MIT', 'GNU GPLv2', 'GNU GPLv3', 'GNU LGPLv2.1', 'GNU LGPLv3', 'BSD-2-Clause', 'BSD-3-Clause', 'MPL-2.0', 'OSL-3.0', 'Apache-2.0', 'GNU AGPLv3'];
-  ensure(validLicences.includes(license), 'Invalid license, must be one of '+validLicences.join(','), 403);
+  const validLicences = ['none', 'unlicense', 'MIT', 'GNU GPLv2', 'GNU GPLv3', 'GNU LGPLv2.1', 'GNU LGPLv3', 'BSD-2-Clause', 'BSD-3-Clause', 'MPL-2.0', 'OSL-3.0', 'Apache-2.0', 'GNU AGPLv3'];
+  ensure(validLicences.includes(license), 'Invalid license, must be one of '+ validLicences.join(','), 403);
   verification.license = license as License;
   const sourceMain = JSON.parse(verification.source)[verification.filename];
   const licenseRegex =
@@ -218,7 +218,11 @@ export const verify = async (
   const existing = await findVerifiedContract(verification.address);
   if (existing) throw new Error('Contract already verified');
 
-  checkLicense(verification);
+  if (!verification.license || verification.license == 'none') {
+    verification.license = 'none';
+  } else {
+    checkLicense(verification);
+  }
 
   const args = verification.arguments;
 
@@ -246,7 +250,11 @@ export const verify = async (
       const code = await getProvider().api.query.evm.codes(codeHash);
       if (code?.toHuman()?.toString() !== '') {
         const signer = maintainer ? await getProvider().api.query.evmAccounts.accounts(maintainer) : undefined;
-        await contractInsert(verification.address, code!.toHuman()!.toString(), signer && signer.toHuman() ? signer!.toHuman()!.toString() : '0x');
+        await contractInsert(
+          verification.address, 
+          code!.toHuman()!.toString(), 
+          signer && signer.toHuman() ? signer!.toHuman()!.toString() : '0x'
+        );
         deployedBytecode = await findContractBytecode(verification.address);
       }
     }

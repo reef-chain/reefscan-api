@@ -151,7 +151,6 @@ const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq>
     'arguments',
     'compilerVersion',
     'filename',
-    'license',
     'name',
     'optimization',
     'runs',
