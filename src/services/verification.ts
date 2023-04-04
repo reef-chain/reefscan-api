@@ -216,7 +216,7 @@ export const verify = async (
   contractData = null
 ): Promise<void> => {
   const existing = await findVerifiedContract(verification.address);
-  if (existing) throw new Error('Contract already verified');
+  ensure(!existing, 'Contract already verified', 400);
 
   if (!verification.license || verification.license == 'none') {
     verification.license = 'none';
