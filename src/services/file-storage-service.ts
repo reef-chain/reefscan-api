@@ -62,10 +62,9 @@ export class GCPStorage implements FileStorageService {
 
     private async getBucket(): Promise<Bucket> {
         if (!this.bucket) {
-            const onBckt = new Promise<Bucket>((resolve, reject) => {
+            return new Promise<Bucket>((resolve) => {
                 this.onBucketInit.push(resolve);
             });
-            return onBckt;
         }
         return Promise.resolve(this.bucket);
     }
