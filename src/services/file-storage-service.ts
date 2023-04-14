@@ -9,7 +9,7 @@ export interface FileStorageService {
 
 export class GCPStorage implements FileStorageService {
     private bucket: Bucket;
-    private onBucketInit: ((b: Bucket) => void)[];
+    private onBucketInit: ((b: Bucket) => void)[]=[];
 
     constructor(path) {
         const bucketName = path;
