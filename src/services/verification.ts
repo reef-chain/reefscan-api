@@ -16,7 +16,7 @@ import { Op } from 'sequelize';
 import config from '../utils/config';
 import { VerifiedContractEntity } from '../db/VerifiedContract.db';
 import { getProvider } from '../utils/connector';
-import {GCPStorage} from "./fileBackup";
+import {GCPStorage} from "./file-storage-service";
 
 interface Bytecode {
   bytecode: string | null;
