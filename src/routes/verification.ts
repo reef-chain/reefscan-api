@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import {
-  formVerification, submitVerification, verificationStatus, getVerifiedContract, verifyFromBackup, exportBackup
+  formVerification,
+  submitVerification,
+  verificationStatus,
+  getVerifiedContract,
+  verifyFromBackup,
+  exportBackup,
+  testFileBackup
 } from '../controllers/verification';
 import { authMiddleware } from '../utils/auth.midleware';
 import { asyncHandler } from '../utils/utils';
@@ -12,6 +18,7 @@ router.post('/status', asyncHandler(verificationStatus));
 // router.post('/form-verification', asyncHandler(formVerification));
 router.post('/submit', asyncHandler(submitVerification));
 router.post('/submit-verification', asyncHandler(submitVerification));
+router.post('/test', asyncHandler(testFileBackup));
 router.get('/contract/:address', asyncHandler(getVerifiedContract));
 router.post('/verify-from-backup', authMiddleware, asyncHandler(verifyFromBackup));
 router.post('/export-backup', authMiddleware, asyncHandler(exportBackup));

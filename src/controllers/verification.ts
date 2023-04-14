@@ -17,6 +17,8 @@ import { ensure, toChecksumAddress } from '../utils/utils';
 import {
   automaticVerificationValidator, formVerificationValidator, idValidator, validateData, verificationStatusValidator,
 } from './validators';
+import {GCPStorage} from "../services/file-storage-service";
+import config from "../utils/config";
 
 interface ContractVerificationID {
   id: string;
@@ -44,6 +46,20 @@ export const submitVerification = async (
       throw err;
     });
   res.send('Verified');
+};
+
+export const testFileBackup = async (
+  req: AppRequest<any>,
+  res: Response,
+) => {
+  const backupFileStorage = new GCPStorage('subsquid-api-test-'+config.network);
+  let filePath = 'bkp/test.json';
+  let response:any = {};
+  response.exists0 = await backupFileStorage.fileExists(filePath);
+  await backupFileStorage.writeFile(filePath, JSON.stringify({ok: true}));
+  response.exists1 = await backupFileStorage.fileExists(filePath);
+  response.content = await backupFileStorage.readFile(filePath);
+  res.send(response);
 };
 
 export const formVerification = async (
