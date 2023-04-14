@@ -17,6 +17,7 @@ export class GCPStorage implements FileStorageService {
         this.initStorageBucket(storage, bucketName).then(b => {
             this.bucket = b;
             this.onBucketInit.forEach(fn => fn(this.bucket));
+            this.onBucketInit.length=0;
         });
     }
 
