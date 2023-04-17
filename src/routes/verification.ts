@@ -5,8 +5,7 @@ import {
   verificationStatus,
   getVerifiedContract,
   verifyFromBackup,
-  exportBackup,
-  testFileBackup
+  exportBackup
 } from '../controllers/verification';
 import { authMiddleware } from '../utils/auth.midleware';
 import { asyncHandler } from '../utils/utils';
