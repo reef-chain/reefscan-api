@@ -18,7 +18,6 @@ router.post('/status', asyncHandler(verificationStatus));
 // router.post('/form-verification', asyncHandler(formVerification));
 router.post('/submit', asyncHandler(submitVerification));
 router.post('/submit-verification', asyncHandler(submitVerification));
-router.get('/test', asyncHandler(testFileBackup));
 router.get('/contract/:address', asyncHandler(getVerifiedContract));
 router.post('/verify-from-backup', authMiddleware, asyncHandler(verifyFromBackup));
 router.post('/export-backup', authMiddleware, asyncHandler(exportBackup));
