@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import {
-  formVerification, submitVerification, verificationStatus, getVerifiedContract, verifyFromBackup, exportBackup
+  formVerification,
+  submitVerification,
+  verificationStatus,
+  getVerifiedContract,
+  verifyFromBackup,
+  exportBackup,
+  testFileBackup
 } from '../controllers/verification';
 import { authMiddleware } from '../utils/auth.midleware';
 import { asyncHandler } from '../utils/utils';

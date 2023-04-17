@@ -17,6 +17,8 @@ import { ensure, toChecksumAddress } from '../utils/utils';
 import {
   automaticVerificationValidator, formVerificationValidator, idValidator, validateData, verificationStatusValidator,
 } from './validators';
+import {GCPStorage} from "../services/file-storage-service";
+import config from "../utils/config";
 
 interface ContractVerificationID {
   id: string;

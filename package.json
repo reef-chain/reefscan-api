@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.3",
+    "@google-cloud/storage": "^6.9.5",
     "@reef-defi/evm-provider": "^1.0.10",
     "@sentry/integrations": "^6.17.9",
     "@sentry/node": "^6.17.9",
