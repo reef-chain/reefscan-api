@@ -77,7 +77,7 @@ interface UpdateContract {
   timestamp: number;
 }
 
-const backupFileStorage = new GCPStorage('subsquid-api-'+config.network);
+const backupFileStorage = new GCPStorage('subsquid-api-backup-'+config.network);
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
   const license = verification.license.replace(':', '').trim();

@@ -53,15 +53,12 @@ export class GCPStorage implements FileStorageService {
     }
 
     private async initStorageBucket(storage: Storage, bucketName: string) {
-        let bckt = storage.bucket(bucketName);
-        try {
-            if (!await bckt.exists()) {
-                await bckt.create();
+        const exists = await storage.bucket(bucketName).exists();
+            if (!exists[0]) {
+                const created=await storage.bucket(bucketName).create();
+                console.log('CCC',created[0]);
             }
-        }catch (e) {
-            await bckt.create();
-        }
-        return bckt;
+        return storage.bucket(bucketName);
     }
 
     private async getBucket(): Promise<Bucket> {
