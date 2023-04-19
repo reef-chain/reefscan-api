@@ -12,10 +12,11 @@ import { buildBatches, ensure, toChecksumAddress, wait } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
 import { verifiedContractRepository } from '..';
 import { Op } from 'sequelize';
-import fs from 'fs';
+// import fs from 'fs';
 import config from '../utils/config';
 import { VerifiedContractEntity } from '../db/VerifiedContract.db';
 import { getProvider } from '../utils/connector';
+import {GCPStorage} from "./file-storage-service";
 
 interface Bytecode {
   bytecode: string | null;
@@ -75,6 +76,8 @@ interface UpdateContract {
   data: string;
   timestamp: number;
 }
+
+const backupFileStorage = new GCPStorage('subsquid-api-backup-'+config.network);
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
   const license = verification.license.replace(':', '').trim();
@@ -503,8 +506,10 @@ export const importBackupFromFiles = async (): Promise<void> => {
   let fileIndex = 1;
   while (fileExists) {
     const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
-    if (fs.existsSync(fileName)) {
-      const file = fs.readFileSync(fileName, "utf8");
+    // if (fs.existsSync(fileName)) {
+    if (await backupFileStorage.fileExists(fileName)) {
+      // const file = fs.readFileSync(fileName, "utf8");
+      const file = await backupFileStorage.readFile(fileName);
       const contractBatch: VerifiedContractEntity[] = JSON.parse(file);
       verifiedContractRepository.bulkCreate(contractBatch);
       fileIndex++;
@@ -523,8 +528,10 @@ export const exportBackupToFiles = async (): Promise<void> => {
   let fileIndex = 1;
   while (fileExists) {
     const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
-    if (fs.existsSync(fileName)) {
-      fs.unlinkSync(fileName);
+    // if (fs.existsSync(fileName)) {
+    if (await backupFileStorage.fileExists(fileName)) {
+      // fs.unlinkSync(fileName);
+      backupFileStorage.deleteFile(fileName);
       fileIndex++;
     } else {
       fileExists = false;
@@ -535,7 +542,8 @@ export const exportBackupToFiles = async (): Promise<void> => {
   const batches = buildBatches<VerifiedContractEntity>(verifiedContracts, 50);
   await Promise.all(batches.map(async (contracts: VerifiedContractEntity[], index: number) => {
     const fileName = `backup/verified_${config.network}_${String(index + 1).padStart(3, "0")}.json`;
-    await fs.promises.writeFile(fileName, JSON.stringify(contracts));
+    // await fs.promises.writeFile(fileName, JSON.stringify(contracts));
+    await backupFileStorage.writeFile(fileName, JSON.stringify(contracts));
   }));
   console.log('Finished exporting backup');
 }

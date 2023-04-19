@@ -32,8 +32,8 @@ const cors = require('cors');
 
 const app = express();
 
-export const verifiedContractRepository = config.network === 'mainnet' 
-  ? sequelize.getRepository(VerifiedContractMainnet) 
+export const verifiedContractRepository = config.network === 'mainnet'
+  ? sequelize.getRepository(VerifiedContractMainnet)
   : sequelize.getRepository(VerifiedContractTestnet);
 
 // add sentry request handler
@@ -43,6 +43,7 @@ app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+app.options('*', cors());
 app.use(morgan('dev'));
 
 app.use('/contract', contractRouter);
