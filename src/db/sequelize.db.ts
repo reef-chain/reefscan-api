@@ -15,5 +15,8 @@ import { VerifiedContractMainnet, VerifiedContractTestnet } from "./VerifiedCont
      dialect: "postgres",
      models: [VerifiedContractMainnet, VerifiedContractTestnet],
      repositoryMode: true,
+       dialectOptions:{
+           connectTimeout: 30000
+       }
    }
  );

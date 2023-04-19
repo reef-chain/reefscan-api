@@ -91,6 +91,7 @@ const server = app.listen(config.httpPort, async () => {
     console.log('Connection has been established successfully.');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
+    Sentry.captureException(error);
   }
   await sequelize.sync({ force: config.dropTablesOnStart });
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
