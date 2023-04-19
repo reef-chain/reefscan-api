@@ -3,7 +3,7 @@ import { ConstructorFragment } from '@ethersproject/abi';
 import { ABI, Argument, Arguments } from '../../utils/types';
 import { ensure } from '../../utils/utils';
 
-interface ParamererInput {
+interface ParameterInput {
   type: string;
   value: Argument;
   name?: string;
@@ -12,7 +12,7 @@ interface ParamererInput {
 interface Parameters {
   type: string;
   funcName: string;
-  inputs: ParamererInput[];
+  inputs: ParameterInput[];
 }
 
 const abiCoder = new utils.AbiCoder();
@@ -39,7 +39,7 @@ const validateParameter = (type: string): Validator => {
   }
 };
 
-const parseParameter = ({ type, value }: ParamererInput): any => {
+const parseParameter = ({ type, value }: ParameterInput): any => {
   switch (type) {
     case 'bool': return value;
     default: return value;

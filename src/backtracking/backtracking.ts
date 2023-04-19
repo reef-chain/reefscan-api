@@ -10,7 +10,7 @@ interface Address {
   id: string;
 }
 
-const backtractContractEvents = async (contractAddress: string): Promise<boolean> => {
+const backtrackContractEvents = async (contractAddress: string): Promise<boolean> => {
   console.log(`Retrieving contract ${contractAddress} unverified evm events`);
   let evmEvents = await query<BacktrackingEvmEvent[]>(
     'findBacktrackingEvmEvents',
@@ -109,7 +109,7 @@ const backtractContractEvents = async (contractAddress: string): Promise<boolean
 export const backtrackEvents = async () => {
   console.log('Starting backtracking service');
   while (true) {
-    // Get contract from newly verificated contract table
+    // Get contract from newly verified contract table
     const contracts = await query<Address[]>(
       'newlyVerifiedContractQueues',
       `query {
@@ -122,7 +122,7 @@ export const backtrackEvents = async () => {
     for (let contractIndex = 0; contractIndex < contracts.length; contractIndex += 1) {
       // Process contract events & store them
       const { id } = contracts[contractIndex];
-      if (await backtractContractEvents(id)) {
+      if (await backtrackContractEvents(id)) {
         await mutate<boolean>(
           `mutation {
             deleteNewlyVerifiedContractQueue(id: "${id}")

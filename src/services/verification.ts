@@ -30,7 +30,7 @@ interface ContractVerifiedID {
   id: string;
 }
 
-interface ContracVerificationInsert {
+interface ContractVerificationInsert {
   id: string;
   name: string;
   filename: string;
@@ -81,8 +81,8 @@ const backupFileStorage = new GCPStorage('subsquid-api-backup-'+config.network);
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
   const license = verification.license.replace(':', '').trim();
-  const validLicences = ['none', 'unlicense', 'MIT', 'GNU GPLv2', 'GNU GPLv3', 'GNU LGPLv2.1', 'GNU LGPLv3', 'BSD-2-Clause', 'BSD-3-Clause', 'MPL-2.0', 'OSL-3.0', 'Apache-2.0', 'GNU AGPLv3'];
-  ensure(validLicences.includes(license), 'Invalid license, must be one of '+ validLicences.join(','), 403);
+  const validLicenses = ['none', 'unlicense', 'MIT', 'GNU GPLv2', 'GNU GPLv3', 'GNU LGPLv2.1', 'GNU LGPLv3', 'BSD-2-Clause', 'BSD-3-Clause', 'MPL-2.0', 'OSL-3.0', 'Apache-2.0', 'GNU AGPLv3'];
+  ensure(validLicenses.includes(license), 'Invalid license, must be one of '+ validLicenses.join(','), 403);
   verification.license = license as License;
   const sourceMain = JSON.parse(verification.source)[verification.filename];
   const licenseRegex =
@@ -169,7 +169,7 @@ export const contractVerificationRequestInsert = async ({
   success,
   errorMessage,
   license
-}: ContracVerificationInsert): Promise<void> => {
+}: ContractVerificationInsert): Promise<void> => {
   await mutate(`
     mutation {
       saveVerificationRequest(

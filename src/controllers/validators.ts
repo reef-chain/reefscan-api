@@ -23,12 +23,12 @@ interface Status {
 // basic ajv schemas
 const nativeAddressSchema: JSONSchemaType<string> = {
   type: 'string',
-  // Matchin reef native address with '5' and 47 other chars
+  // Matching reef native address with '5' and 47 other chars
   pattern: '5[0-9a-zA-Z]{47}',
 };
 const evmAddressSchema: JSONSchemaType<string> = {
   type: 'string',
-  // Matchin evm address with '0x' and 40 other chars
+  // Matching evm address with '0x' and 40 other chars
   pattern: '0x[0-9a-fA-F]{40}',
 };
 const filenameSchema: JSONSchemaType<string> = {
@@ -58,7 +58,7 @@ const compilerVersionSchema: JSONSchemaType<string> = {
 //   type: ["boolean", "string", "integer"],
 // };
 
-// TODO currently we accept agruments as a string, which is not good.
+// TODO currently we accept arguments as a string, which is not good.
 // Arguments should have a type of Argument[]!
 // Couldn't found a way in the Ajv lib to self-referencing declared array
 // const argumentSchema: JSONSchemaType<Arguments> = {
@@ -72,7 +72,7 @@ const compilerVersionSchema: JSONSchemaType<string> = {
 // }
 
 // TODO the same for the source content.
-// For the time being we are accepting source as a strinyfied JSON
+// For the time being we are accepting source as a stringified JSON
 // But this must change to an object with {[filename: string]: [content: string]}!
 // Current schema ensures that string is an object
 // const sourceSchema: JSONSchemaType<Source> = {
@@ -92,7 +92,7 @@ const compilerVersionSchema: JSONSchemaType<string> = {
 //   // }
 // }
 
-// This are only temporary aruments and source validators!
+// This are only temporary arguments and source validators!
 const argumentSchema: JSONSchemaType<string> = {
   type: 'string',
   // Arguments string must start and end with [ ], content is optional

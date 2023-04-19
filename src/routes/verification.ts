@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import {
-  formVerification,
+  // formVerification,
   submitVerification,
   verificationStatus,
   getVerifiedContract,
   verifyFromBackup,
   exportBackup
 } from '../controllers/verification';
-import { authMiddleware } from '../utils/auth.midleware';
+import { authMiddleware } from '../utils/auth.middleware';
 import { asyncHandler } from '../utils/utils';
 
 const router = Router();
