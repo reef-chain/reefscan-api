@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
 import { RewriteFrames } from '@sentry/integrations';
 import express, { Response, Request, NextFunction } from 'express';
 import morgan from 'morgan';
@@ -15,7 +16,7 @@ import { createBackupFromSquid, importBackupFromFiles } from './services/verific
 import {getReefPrice} from "./routes/price";
 
 /* eslint "no-underscore-dangle": "off" */
-Sentry.init({
+/*Sentry.init({
   dsn: config.sentryDns,
   tracesSampleRate: 1.0,
   integrations: [
@@ -24,20 +25,50 @@ Sentry.init({
     }),
   ],
   environment: config.environment,
-});
-Sentry.setTag('component', 'api');
-Sentry.setTag('network', config.network);
+});*/
+
 
 const cors = require('cors');
 
 const app = express();
+
+
+Sentry.init({
+  dsn: config.sentryDns,
+  integrations: [
+    new RewriteFrames({
+      root: global.__dirname,
+    }),
+    // enable HTTP calls tracing
+    new Sentry.Integrations.Http({ tracing: true }),
+    // enable Express.js middleware tracing
+    new Tracing.Integrations.Express({ app }),
+    // Automatically instrument Node.js libraries and frameworks
+    ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
+  ],
+
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+  environment: config.environment,
+});
+
+Sentry.setTag('component', 'api');
+Sentry.setTag('network', config.network);
+
+// RequestHandler creates a separate execution context, so that all
+// transactions/spans/breadcrumbs are isolated across requests
+app.use(Sentry.Handlers.requestHandler());
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.Handlers.tracingHandler());
 
 export const verifiedContractRepository = config.network === 'mainnet'
   ? sequelize.getRepository(VerifiedContractMainnet)
   : sequelize.getRepository(VerifiedContractTestnet);
 
 // add sentry request handler
-app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
+// app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
 
 // Parse incoming requests with JSON payloads
 app.use(express.urlencoded({ extended: true }));
@@ -62,7 +93,7 @@ app.use('/api/verificator', verificationRouter);
 
 app.get('/price/reef', getReefPrice);
 
-// add sentry error handler
+// The error handler must be before any other error middleware and after all controllers
 app.use(
   Sentry.Handlers.errorHandler({
     shouldHandleError() {
@@ -73,12 +104,13 @@ app.use(
 
 /* eslint "no-unused-vars": "off" */
 const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.log({
-    request: req,
-    error: err,
-  });
   const status = err instanceof StatusError ? err.status : 400;
   const message = err.message || 'Something went wrong';
+  console.log('ERROR=',{
+    // request: req,
+    message,
+    status,
+  });
   res.status(status).send({ error: message });
 };
 
