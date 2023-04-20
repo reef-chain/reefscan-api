@@ -13,7 +13,7 @@ import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
 import { createBackupFromSquid, importBackupFromFiles } from './services/verification';
-import {getReefPrice} from "./routes/price";
+import {getReefPrice, getVersion} from "./routes/price";
 
 /* eslint "no-underscore-dangle": "off" */
 /*Sentry.init({
@@ -92,6 +92,7 @@ app.use('/api/verificator', verificationRouter);
 // });
 
 app.get('/price/reef', getReefPrice);
+app.get('/hc', getVersion);
 
 // The error handler must be before any other error middleware and after all controllers
 app.use(

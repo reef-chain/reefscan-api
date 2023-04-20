@@ -18,3 +18,6 @@ export const getReefPrice = async (_, res: Response, next: NextFunction) => {
     res.send({...currentPrice.price, timestamp: currentPrice.timestamp});
 
 }
+export const getVersion = async (_, res: Response, next: NextFunction) => {
+    res.send({version: process.env.npm_package_version, timestamp: (new Date()).getTime()});
+}
