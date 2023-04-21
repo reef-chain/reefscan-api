@@ -13,7 +13,8 @@ import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
 import { createBackupFromSquid, importBackupFromFiles } from './services/verification';
-import {getReefPrice, getVersion} from "./routes/price";
+import {getReefPrice} from "./routes/price";
+import {getVersion} from "./routes/version";
 
 /* eslint "no-underscore-dangle": "off" */
 /*Sentry.init({
