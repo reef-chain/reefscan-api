@@ -1,27 +1,29 @@
 import { Response } from 'express';
-import { authenticationToken } from '../services/utils';
 import {
   contractVerificationRequestInsert,
   contractVerificationStatus,
   exportBackupToFiles,
   findVerifiedContract,
+  updateVerifiedContractApproved,
   verify,
   verifyPendingFromBackup,
 } from '../services/verification';
 import {
   AppRequest,
   AutomaticContractVerificationReq,
-  ManualContractVerificationReq,
 } from '../utils/types';
 import { ensure, toChecksumAddress } from '../utils/utils';
 import {
-  automaticVerificationValidator, formVerificationValidator, idValidator, validateData, verificationStatusValidator,
+  automaticVerificationValidator, idValidator, validateData,
 } from './validators';
-import {GCPStorage} from "../services/file-storage-service";
-import config from "../utils/config";
 
 interface ContractVerificationID {
   id: string;
+}
+
+interface VerifiedContractApproved {
+  address: string;
+  approved: boolean;
 }
 
 export const submitVerification = async (
@@ -42,32 +44,6 @@ export const submitVerification = async (
         args: req.body.arguments,
         errorMessage: err.message,
         optimization: req.body.optimization === 'true',
-      });
-      throw err;
-    });
-  res.send('Verified');
-};
-
-export const formVerification = async (
-  req: AppRequest<ManualContractVerificationReq>,
-  res: Response,
-) => {
-  validateData(req.body, formVerificationValidator);
-
-  const isAuthenticated = await authenticationToken(req.body.token);
-  ensure(isAuthenticated, 'Google Token Authentication failed!', 404);
-
-  req.body.address = toChecksumAddress(req.body.address);
-
-  await verify(req.body)
-    .catch(async (err) => {
-      await contractVerificationRequestInsert({
-        ...req.body,
-        success: false,
-        id: req.body.address,
-        args: req.body.arguments,
-        errorMessage: err.message,
-        optimization: req.body.optimization === 'true'
       });
       throw err;
     });
@@ -108,4 +84,12 @@ export const exportBackup = async (
 ) => {
   exportBackupToFiles();
   res.send("Backup export process started");
+}
+
+export const setContractApproved = async (
+  req: AppRequest<VerifiedContractApproved>,
+  res: Response,
+) => {
+  const success = await updateVerifiedContractApproved(req.body.address, req.body.approved);
+  res.send({ success });
 }

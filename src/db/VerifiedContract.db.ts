@@ -43,6 +43,9 @@ export class VerifiedContractEntity extends Model<Partial<VerifiedContractEntity
 
   @Column(DataType.DOUBLE)
   timestamp!: number;
+
+  @Column(DataType.BOOLEAN)
+  approved!: boolean;
 }
 
 @Table({ tableName: "verified_contract_mainnet", modelName: "VerifiedContractMainnet" })

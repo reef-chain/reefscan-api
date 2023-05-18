@@ -3,7 +3,6 @@ import {
   AutomaticContractVerificationReq,
   compilerTargets,
   License,
-  ManualContractVerificationReq,
   QueryVerifiedPoolsWithUserLPReq,
   Target,
   TokenBalanceParam,
@@ -18,7 +17,6 @@ interface ID {
 interface Status {
   status: string;
 }
-// interface Address { address: string; }
 
 // basic ajv schemas
 const nativeAddressSchema: JSONSchemaType<string> = {
@@ -52,45 +50,6 @@ const compilerVersionSchema: JSONSchemaType<string> = {
   type: 'string',
   pattern: 'v[0-9]+.[0-9]+.[0-9]+.*',
 };
-
-// Constructing optional type of string, boolean and number
-// const optionalSchema: JSONSchemaType<string|boolean|number> = {
-//   type: ["boolean", "string", "integer"],
-// };
-
-// TODO currently we accept arguments as a string, which is not good.
-// Arguments should have a type of Argument[]!
-// Couldn't found a way in the Ajv lib to self-referencing declared array
-// const argumentSchema: JSONSchemaType<Arguments> = {
-//   type: "array",
-//   items: [
-//     {type: "string"},
-//     {type: "boolean"},
-//     {type: "number"}
-//     {type: "array", items: this} // the array should link back to
-//   ]
-// }
-
-// TODO the same for the source content.
-// For the time being we are accepting source as a stringified JSON
-// But this must change to an object with {[filename: string]: [content: string]}!
-// Current schema ensures that string is an object
-// const sourceSchema: JSONSchemaType<Source> = {
-//   type: 'object',
-//   required: [],
-//   // Source filename must finish with .sol
-//   propertyNames: {
-//     type: "string",
-//     // pattern: /.sol/g,
-//   },
-//   properties: {
-
-//   }
-//   // Each value in source must be of type string
-//   // unevaluatedProperties: {
-//   //   type: "string"
-//   // }
-// }
 
 // This are only temporary arguments and source validators!
 const argumentSchema: JSONSchemaType<string> = {
@@ -159,14 +118,6 @@ const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq>
   ],
   additionalProperties: false,
 };
-const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
-  type: 'object',
-  properties: {
-    ...submitVerificationSchema.properties!,
-    token: { type: 'string' },
-  },
-  required: [...submitVerificationSchema.required, 'token'],
-};
 
 const verifiedPoolsWithUserLPSchema: JSONSchemaType<QueryVerifiedPoolsWithUserLPReq> = {
   type: 'object',
@@ -186,7 +137,6 @@ export const nativeAddressValidator = ajv.compile(nativeAddressSchema);
 export const verificationStatusValidator = ajv.compile(
   verificationStatusSchema,
 );
-export const formVerificationValidator = ajv.compile(formVerificationSchema);
 export const accountTokenBodyValidator = ajv.compile(accountTokenBalanceSchema);
 export const automaticVerificationValidator = ajv.compile(
   submitVerificationSchema,

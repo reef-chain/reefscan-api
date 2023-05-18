@@ -113,6 +113,22 @@ This end point is protected by admin password.
 | password       | string |
 
 
+## Set contract approved
+Whitelists a verified contract in explorer API.
+This end point is protected by admin password.
+
+**URL** : `/verification/set-contract-approved`
+
+**Method** : `POST`
+
+**Request body**
+| Name           |  Type  |
+| -------------- | :----: |
+| address        | string |
+| approved       | boolean |
+| password       | string |
+
+
 ## Get REEF price
 
 **URL** : `/price/reef`

@@ -13,7 +13,7 @@ import { trim } from "./utils";
 
 const queryClient = new ApolloClient({
   link: new HttpLink({
-    uri: `${config.graphqlApi}`,
+    uri: `${config.explorerApi}`,
     fetch,
   }),
   cache: new InMemoryCache()
@@ -21,7 +21,7 @@ const queryClient = new ApolloClient({
 
 const mutateClient = new ApolloClient({
   link: new HttpLink({
-    uri: `${config.graphqlApi}`,
+    uri: `${config.explorerApi}`,
     fetch,
     headers: {
       authorization: `Bearer ${jwt.sign({ value: "MUTATE" }, config.jwtSecret)}`
