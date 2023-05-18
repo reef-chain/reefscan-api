@@ -133,6 +133,6 @@ export const backtrackEvents = async () => {
       }
     }
 
-    await wait(1000);
+    await wait(100000000);
   }
 };
