@@ -112,10 +112,6 @@ export interface AutomaticContractVerificationReq {
 export type AutomaticContractVerificationKey =
   keyof AutomaticContractVerificationReq;
 
-export interface ManualContractVerificationReq
-  extends AutomaticContractVerificationReq {
-  token: string;
-}
 export interface PoolReq {
   tokenAddress1: string;
   tokenAddress2: string;

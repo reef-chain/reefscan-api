@@ -41,4 +41,6 @@ yarn test
 
 **Export backup**: [`/verification/export-backup`](api.md/#export-backup)
 
+**Set contract approved**: [`/verification/set-contract-approved`](api.md/#set-contract-approved)
+
 **Get REEF price**: [`/price/reef`](api.md/#get-reef-price)

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import config from '../utils/config';
 
 const REEF_DENOM = 'reef';
 
@@ -11,15 +10,6 @@ export interface Price {
 interface PriceWrapper {
   [coin: string]: Price;
 }
-
-export const authenticationToken = async (token: string): Promise<boolean> => axios
-  .get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.recaptchaSecret}&response=${token}`)
-  .then((res) => res.data.success)
-  .catch((err) => {
-    // TODO add logger
-    console.log(err);
-    throw new Error('Can not extract recaptcha token...');
-  });
 
 export const fetchReefPrice = async (): Promise<Price> => axios
   .get<PriceWrapper>(`https://api.coingecko.com/api/v3/simple/price?ids=${REEF_DENOM}&vs_currencies=usd&include_24hr_change=true`)

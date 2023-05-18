@@ -12,11 +12,13 @@ import { buildBatches, ensure, toChecksumAddress, wait } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
 import { verifiedContractRepository } from '..';
 import { Op } from 'sequelize';
-// import fs from 'fs';
+import fs from 'fs';
 import config from '../utils/config';
 import { VerifiedContractEntity } from '../db/VerifiedContract.db';
 import { getProvider } from '../utils/connector';
 import {GCPStorage} from "./file-storage-service";
+import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client/core';
+import fetch from "cross-fetch";
 
 interface Bytecode {
   bytecode: string | null;
@@ -75,9 +77,13 @@ interface UpdateContract {
   type: ContractType;
   data: string;
   timestamp: number;
+  approved?: boolean;
 }
 
-const backupFileStorage = new GCPStorage('subsquid-api-backup-'+config.network);
+let backupFileStorage: GCPStorage | null = null;
+if (!config.localBackup) {
+  backupFileStorage = new GCPStorage('subsquid-api-backup-'+config.network);
+}
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
   const license = verification.license.replace(':', '').trim();
@@ -131,7 +137,8 @@ const insertVerifiedContract = async ({
   type,
   data,
   license,
-  timestamp
+  timestamp,
+  approved = false
 }: UpdateContract): Promise<boolean> => {
   const result = await mutate<{saveVerifiedContract: boolean}>(`
     mutation {
@@ -149,7 +156,8 @@ const insertVerifiedContract = async ({
         type: "${type}",
         contractData: ${JSON.stringify(data)}
         license: "${license}",
-        timestamp: ${timestamp}
+        timestamp: ${timestamp},
+        approved: ${approved}
       )
     }
   `);
@@ -216,7 +224,8 @@ export const contractInsert = async (
 export const verify = async (
   verification: AutomaticContractVerificationReq,
   backup = true,
-  contractData = null
+  contractData = null,
+  approved = false
 ): Promise<void> => {
   const existing = await findVerifiedContract(verification.address);
   ensure(!existing, 'Contract already verified', 400);
@@ -286,7 +295,8 @@ export const verify = async (
     type,
     abi: fullAbi,
     data: JSON.stringify(data),
-    optimization: verification.optimization === 'true'
+    optimization: verification.optimization === 'true',
+    approved
   });
 
   if (verified && backup) {
@@ -304,7 +314,8 @@ export const verify = async (
         target: verification.target,
         license: verification.license.toString(),
         timestamp: verification.timestamp,
-        contractData: contractData || data
+        contractData: contractData || data,
+        approved
       });
     } catch (err: any) {
       console.error(err);
@@ -350,6 +361,66 @@ export const updateVerifiedContractData = async (
   return success;
 };
 
+export const updateVerifiedContractApproved = async (
+  id: string,
+  approved: boolean
+): Promise<boolean> => {
+  // Updating verified contract approved
+  const response = await mutate<any>(`
+    mutation {
+      updateVerifiedContractApproved(
+        id: "${id}",
+        approved: ${approved}
+      )
+    }
+  `);
+  const success = response?.updateVerifiedContractApproved || false;
+
+  if (success)  {
+    // Updating contract into API database as backup
+    try {
+      const verifiedBackup = await verifiedContractRepository.findByPk(id);
+      if (verifiedBackup) {
+        verifiedContractRepository.update(
+          { approved },
+          { where: {address: id} }
+        );
+      }
+    } catch (err: any) {
+      console.error(err);
+    }
+
+    // Notify change to Reef Swap API
+    await notifyVerifiedContractApprovedInReefSwap(id, approved);
+  }
+
+  return success;
+};
+
+// Notifies Reef Swap API to update pool state when `updateVerifiedContractApproved` is called by the admin.
+// TODO: Manage this with events instead of polling.
+const notifyVerifiedContractApprovedInReefSwap = async (
+  id: string,
+  approved: boolean
+) => {
+  const reefSwapClient = new ApolloClient({
+    link: new HttpLink({
+      uri: `${config.reefSwapApi}`,
+      fetch,
+      headers: { authorization: `Bearer ${config.reefSwapApiKey}` }
+    }),
+    cache: new InMemoryCache(),
+  });
+
+  try {
+    const statement = `mutation{updateTokenApproved(id: "${id}", approved: ${approved})}`;
+    const result = await reefSwapClient.mutate({ mutation: gql(statement) });
+    console.log(`Notify token approved: ${result.data.updateTokenApproved}`);
+  } catch (error) {
+    console.error(`Notify token approved ERROR: ${error}`)
+  }
+};
+
 export const contractVerificationStatus = async (
   id: string,
 ): Promise<boolean> => {
@@ -384,6 +455,7 @@ export const findVerifiedContract = async (
         type
         contractData
         timestamp
+        approved
       }
     }`
   );
@@ -438,7 +510,7 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
         compilerVersion: verifiedContract.compilerVersion,
         timestamp: verifiedContract.timestamp,
         blockHeight: 0,
-      }, false, verifiedContract.contractData);
+      }, false, verifiedContract.contractData, verifiedContract.approved || false);
     } catch (err: any) { 
       console.error(err);
     }
@@ -476,6 +548,7 @@ export const createBackupFromSquid = async (): Promise<void> => {
           license
           contractData
           timestamp
+          approved
         }
       }`
     )
@@ -485,7 +558,8 @@ export const createBackupFromSquid = async (): Promise<void> => {
       moreAvailable = verifiedContracts.length === QUERY_LIMIT;
       await verifiedContractRepository.bulkCreate(
         verifiedContracts.map((contract) => ({
-          ...contract, 
+          ...contract,
+          approved: contract.approved === true,
           address: contract.id,
           timestamp: new Date(contract.timestamp).getTime()
         }))
@@ -506,15 +580,24 @@ export const importBackupFromFiles = async (): Promise<void> => {
   let fileIndex = 1;
   while (fileExists) {
     const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
-    // if (fs.existsSync(fileName)) {
-    if (await backupFileStorage.fileExists(fileName)) {
-      // const file = fs.readFileSync(fileName, "utf8");
-      const file = await backupFileStorage.readFile(fileName);
-      const contractBatch: VerifiedContractEntity[] = JSON.parse(file);
-      verifiedContractRepository.bulkCreate(contractBatch);
-      fileIndex++;
+    if (config.localBackup) {
+      if (fs.existsSync(fileName)) {
+        const file = fs.readFileSync(fileName, "utf8");
+        const contractBatch: VerifiedContractEntity[] = JSON.parse(file);
+        verifiedContractRepository.bulkCreate(contractBatch);
+        fileIndex++;
+      } else {
+        fileExists = false;
+      }
     } else {
-      fileExists = false;
+      if (await backupFileStorage!.fileExists(fileName)) {
+        const file = await backupFileStorage!.readFile(fileName);
+        const contractBatch: VerifiedContractEntity[] = JSON.parse(file);
+        verifiedContractRepository.bulkCreate(contractBatch);
+        fileIndex++;
+      } else {
+        fileExists = false;
+      }
     }
   }
 }
@@ -528,13 +611,20 @@ export const exportBackupToFiles = async (): Promise<void> => {
   let fileIndex = 1;
   while (fileExists) {
     const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
-    // if (fs.existsSync(fileName)) {
-    if (await backupFileStorage.fileExists(fileName)) {
-      // fs.unlinkSync(fileName);
-      backupFileStorage.deleteFile(fileName);
-      fileIndex++;
+    if (config.localBackup) {
+      if (fs.existsSync(fileName)) {
+        fs.unlinkSync(fileName);
+        fileIndex++;
+      } else {
+        fileExists = false;
+      }
     } else {
-      fileExists = false;
+      if (await backupFileStorage!.fileExists(fileName)) {
+        backupFileStorage!.deleteFile(fileName);
+        fileIndex++;
+      } else {
+        fileExists = false;
+      }
     }
   }
 
@@ -542,8 +632,11 @@ export const exportBackupToFiles = async (): Promise<void> => {
   const batches = buildBatches<VerifiedContractEntity>(verifiedContracts, 50);
   await Promise.all(batches.map(async (contracts: VerifiedContractEntity[], index: number) => {
     const fileName = `backup/verified_${config.network}_${String(index + 1).padStart(3, "0")}.json`;
-    // await fs.promises.writeFile(fileName, JSON.stringify(contracts));
-    await backupFileStorage.writeFile(fileName, JSON.stringify(contracts));
+    if (config.localBackup) {
+      await fs.promises.writeFile(fileName, JSON.stringify(contracts));
+    } else {
+      await backupFileStorage!.writeFile(fileName, JSON.stringify(contracts));
+    }
   }));
   console.log('Finished exporting backup');
 }
