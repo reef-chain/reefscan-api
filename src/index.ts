@@ -11,6 +11,7 @@ import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
+import updateTokenIconRouter from './routes/updateTokenIcon';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
 import { createBackupFromSquid, importBackupFromFiles } from './services/verification';
 import {getReefPrice} from "./routes/price";
@@ -82,6 +83,7 @@ app.use('/contract', contractRouter);
 app.use('/api/contract', contractRouter);
 app.use('/verification', verificationRouter);
 app.use('/api/verificator', verificationRouter);
+app.use('/api/updateTokenIcon',updateTokenIconRouter);
 
 // app.get('/api/price/fetch/reef', async (_, res: Response, next: NextFunction) => {
 //   try {
