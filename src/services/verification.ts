@@ -602,9 +602,6 @@ export const importBackupFromFiles = async (): Promise<void> => {
   }
 }
 
-export const testFileService = async (): Promise<void> => {
-
-}
 // Exports verified contracts from backup database to JSON files
 export const exportBackupToFiles = async (): Promise<void> => {
   const verifiedContracts = await verifiedContractRepository.findAll();
@@ -622,9 +619,8 @@ export const exportBackupToFiles = async (): Promise<void> => {
         fileExists = false;
       }
     } else {
-      console.log('CHECK backup file', fileName)
       let exists = await backupFileStorage!.fileExists(fileName);
-      console.log('---CHECK if file exists=', exists)
+      console.log('CHECK backup file', fileName, exists)
       if (exists) {
         backupFileStorage!.deleteFile(fileName);
         fileIndex++;
@@ -641,7 +637,7 @@ export const exportBackupToFiles = async (): Promise<void> => {
     if (config.localBackup) {
       await fs.promises.writeFile(fileName, JSON.stringify(contracts));
     } else {
-      console.log('WRITE backup', fileName);
+      console.log('WRITE backup file', fileName);
       await backupFileStorage!.writeFile(fileName, JSON.stringify(contracts));
     }
   }));
