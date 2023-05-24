@@ -260,8 +260,8 @@ export const verify = async (
       if (code?.toHuman()?.toString() !== '') {
         const signer = maintainer ? await getProvider().api.query.evmAccounts.accounts(maintainer) : undefined;
         await contractInsert(
-          verification.address, 
-          code!.toHuman()!.toString(), 
+          verification.address,
+          code!.toHuman()!.toString(),
           signer && signer.toHuman() ? signer!.toHuman()!.toString() : '0x'
         );
         deployedBytecode = await findContractBytecode(verification.address);
@@ -485,8 +485,8 @@ export const findAllVerifiedContractIds = async (): Promise<string[]> => {
 export const verifyPendingFromBackup = async (): Promise<string> => {
   const verifiedIds = await findAllVerifiedContractIds();
 
-  const verifiedPending = await verifiedContractRepository.findAll({ 
-    where: { address: { [Op.notIn]: verifiedIds } } 
+  const verifiedPending = await verifiedContractRepository.findAll({
+    where: { address: { [Op.notIn]: verifiedIds } }
   });
   console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
 
@@ -508,7 +508,7 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
         timestamp: verifiedContract.timestamp,
         blockHeight: 1,
       }, false, verifiedContract.contractData, verifiedContract.approved || false);
-    } catch (err: any) { 
+    } catch (err: any) {
       console.error(err);
     }
   }
