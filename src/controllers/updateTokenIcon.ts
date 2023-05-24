@@ -2,48 +2,31 @@ import { Response } from 'express';
 import { query } from '../utils/connector';
 import { AppRequest } from '../utils/types';
 import { ensure, toChecksumAddress } from '../utils/utils';
-import ethers from 'ethers';
 import { upload } from '../services/updateTokenIcon';
+import crypto from 'crypto';
+import {u8aToHex} from "@polkadot/util";
+import {decodeAddress, signatureVerify} from "@reef-defi/util-crypto";
 import { updateVerifiedContractData } from '../services/verification';
-
-interface VerifiedContract {
-  signer: JSON;
-  iconUrl: String;
-  id:String;
-}
-
-interface SignedMessageRequest {
-  signMsg: JSON;
-  file: File;
-}
 
 export const findVerifiedContract = async (
   id: string,
-): Promise<VerifiedContract | null> => {
-  const verifiedContract = await query<VerifiedContract | null>(
-    'fetchContract',
+): Promise<any | null> => {
+  const verifiedContractById = await query<any | null>(
+    'verifiedContractById',
     `query {
-      contracts(limit: 1, where: {id_containsInsensitive:"${id}"}) {
-        signer {
+      verifiedContractById(id: "${id}") {
+        id
+        contractData
+        contract {
+          signer {
             id
           }
-        iconUrl
         }
+      }
     }`
   );
-  return verifiedContract;
+  return verifiedContractById;
 };
-
-const generateSHA256Hash=(data)=>{
-  const buffer = new Uint8Array(data)
-  return crypto.subtle.digest('SHA-256', buffer).then((hashBuffer) => {
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const hashHex = hashArray
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
-    return hashHex
-  })
-}
 
 const getVerifiedContract = async (
   contractId
@@ -51,36 +34,61 @@ const getVerifiedContract = async (
   const contract = await findVerifiedContract(
     toChecksumAddress(contractId),
   );
+  console.log(contract)
   ensure(!!contract, 'Contract does not exist');
   return contract;
 };
 
+const isValidSignature = (signedMessage, signature, address) => {
+  const publicKey = decodeAddress(address);
+  const hexPublicKey = u8aToHex(publicKey);
+
+  return signatureVerify(signedMessage, signature, hexPublicKey).isValid;
+};
+
+function generateSHA256Hash(inputString) {
+  const hash = crypto.createHash('sha256');
+  hash.update(inputString);
+  return hash.digest('hex');
+}
+
 export const uploadTokenIcon = async (
-    req: AppRequest<SignedMessageRequest>,
+    req: AppRequest<any>,
     res: Response,
   ) => {
-    const contractAddress = toChecksumAddress(req.body.signMsg['contractAddress']);
-    const fileHash = req.body.signMsg['fileHash'];
+    // extracting all the data from the req
+    const contractAddress = toChecksumAddress(req.body['contractAddress']);
+    const file = req.body['file'];
+    const signature = req.body['signature'];
+    const fileHash = req.body['fileHash'];
+    const signingAddress = req.body['signingAddress'];
 
     //checking if the file sent is the one which was hashed earlier
-    const file = req.body.file;
     const calculatedHash = generateSHA256Hash(file);
-
-    //if hash is not same i.e different file uploaded
     if(calculatedHash != fileHash){
-      return "invalid hash";
+      res.send(403).send('different file uploaded')
     }
 
-    //file is same - now checking if owner signed message or not
-    const signerAddress = ethers.utils.verifyMessage(req.body.signMsg['data'], req.body['signature']);
-    
-    const contract = getVerifiedContract(contractAddress);
-    const ownerOfContract = contract['owner'];
+    // checking validity of signature
+    if(!isValidSignature(fileHash,signature,signingAddress)){
+      res.status(403).send('invalid signature')
+    }
 
-    if(signerAddress === ownerOfContract){
-      const ipfsHash = upload(file);
-      await updateVerifiedContractData(contractAddress,'ipfs://'+ipfsHash);
-      res.send('Updated token successfully');
-    } 
-    res.send('You are not owner of contract');
+    // who is owner of contract?
+    const contract = await getVerifiedContract(contractAddress);
+    const ownerOfContract = contract.contract.signer.id;
+
+    // check if signer is owner
+    if(ownerOfContract!=signingAddress){
+      res.status(403).send("you are not the owner")
+    }else{
+      // uploads file to ipfs
+      upload(file).then(hash=>{
+        updateVerifiedContractData(contractAddress,{'iconUrl':'ipfs://'+hash});
+      res.status(200).send('token updated successfully');
+      }).catch(error => {
+        res.status(403).send("encountered some error");
+      });
+    }
+    res.status(403).send("encountered some error");
 };
