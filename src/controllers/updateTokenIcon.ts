@@ -58,13 +58,15 @@ export const uploadTokenIcon = async (
   ) => {
     // extracting all the data from the req
     const contractAddress = toChecksumAddress(req.body['contractAddress']);
-    const file = req.body['file'];
+    const fileData = req.body['fileData'];
+    const uploadTimestamp = fileData['timestamp'];
+    const file = fileData['fileBase64'];
     const signature = req.body['signature'];
     const fileHash = req.body['fileHash'];
     const signingAddress = req.body['signingAddress'];
 
     //checking if the file sent is the one which was hashed earlier
-    const calculatedHash = generateSHA256Hash(file);
+    const calculatedHash = generateSHA256Hash(JSON.stringify(fileData));
     if(calculatedHash != fileHash){
       res.send(403).send('different file uploaded')
     }
@@ -77,6 +79,12 @@ export const uploadTokenIcon = async (
     // who is owner of contract?
     const contract = await getVerifiedContract(contractAddress);
     const ownerOfContract = contract.contract.signer.id;
+    const lastUpdatedOn = contract.contractData['updatedOn'];
+    
+    // if request is being sent again [ someone stole the request by intercepting network ]
+    if(lastUpdatedOn!= undefined && lastUpdatedOn>uploadTimestamp){
+      res.status(403).send("malicious intent");
+    }
 
     // check if signer is owner
     if(ownerOfContract!=signingAddress){
@@ -90,5 +98,4 @@ export const uploadTokenIcon = async (
         res.status(403).send("encountered some error");
       });
     }
-    res.status(403).send("encountered some error");
 };

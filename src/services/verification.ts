@@ -509,7 +509,7 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
         optimization: verifiedContract.optimization.toString(),
         compilerVersion: verifiedContract.compilerVersion,
         timestamp: verifiedContract.timestamp,
-        blockHeight: 0,
+        blockHeight: 1,
       }, false, verifiedContract.contractData, verifiedContract.approved || false);
     } catch (err: any) { 
       console.error(err);
