@@ -7,6 +7,7 @@ import config from './utils/config';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
 import updateTokenIconRouter from './routes/updateTokenIcon';
+import bodyParser from 'body-parser';
 import { fetchReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
@@ -16,6 +17,7 @@ import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedC
 import { createBackupFromSquid, importBackupFromFiles } from './services/verification';
 import {getReefPrice} from "./routes/price";
 import {getVersion} from "./routes/version";
+import { UploadTokenIconMainnet, UploadTokenIconTestnet } from './db/UploadTokenIconNonce.db';
 
 /* eslint "no-underscore-dangle": "off" */
 /*Sentry.init({
@@ -69,10 +71,15 @@ export const verifiedContractRepository = config.network === 'mainnet'
   ? sequelize.getRepository(VerifiedContractMainnet)
   : sequelize.getRepository(VerifiedContractTestnet);
 
+export const uploadTokenIconRepository = config.network === 'mainnet'
+  ? sequelize.getRepository(UploadTokenIconMainnet)
+  : sequelize.getRepository(UploadTokenIconTestnet);
+
 // add sentry request handler
 // app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
 
 // Parse incoming requests with JSON payloads
+app.use(bodyParser.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
