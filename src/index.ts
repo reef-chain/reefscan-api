@@ -17,7 +17,6 @@ import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedC
 import { createBackupFromSquid, importBackupFromFiles } from './services/verification';
 import {getReefPrice} from "./routes/price";
 import {getVersion} from "./routes/version";
-import { UploadTokenIconMainnet, UploadTokenIconTestnet } from './db/UploadTokenIconNonce.db';
 
 /* eslint "no-underscore-dangle": "off" */
 /*Sentry.init({
@@ -70,10 +69,6 @@ app.use(Sentry.Handlers.tracingHandler());
 export const verifiedContractRepository = config.network === 'mainnet'
   ? sequelize.getRepository(VerifiedContractMainnet)
   : sequelize.getRepository(VerifiedContractTestnet);
-
-export const uploadTokenIconRepository = config.network === 'mainnet'
-  ? sequelize.getRepository(UploadTokenIconMainnet)
-  : sequelize.getRepository(UploadTokenIconTestnet);
 
 // add sentry request handler
 // app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);

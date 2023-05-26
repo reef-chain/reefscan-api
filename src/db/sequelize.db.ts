@@ -1,7 +1,6 @@
 import { Sequelize } from "sequelize-typescript";
 import config from "../utils/config";
 import { VerifiedContractMainnet, VerifiedContractTestnet } from "./VerifiedContract.db";
-import { UploadTokenIconMainnet, UploadTokenIconTestnet } from "./UploadTokenIconNonce.db";
 
 //let connStr = `postgres://${config.dbUser}:${config.dbPassword}@${config.dbHost}/${config.dbName}`;
 //export const sequelize = new Sequelize(connStr, {
@@ -14,7 +13,7 @@ import { UploadTokenIconMainnet, UploadTokenIconTestnet } from "./UploadTokenIco
    {
      host: config.dbHost,
      dialect: "postgres",
-     models: [VerifiedContractMainnet, VerifiedContractTestnet,UploadTokenIconMainnet,UploadTokenIconTestnet],
+     models: [VerifiedContractMainnet, VerifiedContractTestnet],
      repositoryMode: true,
        dialectOptions:{
            connectTimeout: 30000

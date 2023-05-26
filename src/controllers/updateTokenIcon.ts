@@ -7,9 +7,7 @@ import crypto from 'crypto';
 import {u8aToHex} from "@polkadot/util";
 import {decodeAddress, signatureVerify} from "@reef-defi/util-crypto";
 import { updateVerifiedContractData } from '../services/verification';
-import {Contract,ethers} from 'ethers';
-import { uploadTokenIconRepository } from '..';
-import { where } from 'sequelize';
+import {Contract} from 'ethers';
 
 export const findVerifiedContract = async (
   id: string,
@@ -55,44 +53,6 @@ function generateSHA256Hash(inputString) {
   return hash.digest('hex');
 }
 
-const deleteNonceById=async(
-  id:string
-)=>{
-  try {
-    const nonceLookup = await uploadTokenIconRepository.findByPk(id);
-    if(nonceLookup){
-      await uploadTokenIconRepository.destroy({where:{address:id}})
-    } 
-  } catch (error) {
-  } 
-}
-
-export const generateNonce = async (
-  req: AppRequest<any>,
-  res: Response,
-) => {
-  const signerAddress = req.body['signerAddress'];
-  if(signerAddress.length === 0 || signerAddress === undefined) res.status(403).send("signerAddress not found");
-  
-  //generating nonce
-  const min = 0;
-  const max = 999;
-  const nonce = Math.floor(Math.random() * (max - min + 1)) + min;
-
-  // saving new nonce to db
-  try {
-    await uploadTokenIconRepository.upsert({
-      address:signerAddress,
-      nonce:nonce,
-    })
-  } catch (err: any) {
-    console.error(err);
-  }
-  res.status(200).send({
-    'nonce':nonce.toString(),
-  });
-}
-
 export const uploadTokenIcon = async (
     req: AppRequest<any>,
     res: Response,
@@ -102,9 +62,9 @@ export const uploadTokenIcon = async (
     const fileData = req.body['fileData'];
     const uploadTimestamp = fileData['timestamp'];
     const file = fileData['fileBase64'];
+    const fileHash = req.body['fileHash'];
     const signature = req.body['signature'];
     const signerAddress = req.body['signerAddress'];
-    const fileHash = req.body['fileHash'];
     const imageSizeInKB = Buffer.from(file, 'base64').length/ 1024;
 
     // if image is more than 500KB return
@@ -114,18 +74,13 @@ export const uploadTokenIcon = async (
 
     // obtaining file hash and comparing to check if it is same file
     const calculatedFileHash = generateSHA256Hash(JSON.stringify(fileData));
-    if(fileHash !== calculatedFileHash){
-      res.status(403).send("different file sent");
+    if(calculatedFileHash !== fileHash){
+      res.status(403).send('different file uploaded')
     }
 
-    // fetch the generated nonce
-    const uploadTokenIconResponse = await uploadTokenIconRepository.findByPk(signerAddress);
-    const nonce = uploadTokenIconResponse?.dataValues.nonce
-    await deleteNonceById(signerAddress);
-
     // checking validity of signature
-    if(!isValidSignature([nonce?.toString()],signature,signerAddress)){
-      res.status(403).send('invalid signature')
+    if(!isValidSignature(calculatedFileHash,signature,signerAddress)){
+      res.status(403).send('invalid signature');
     }
 
     // does contract have iconUri function
