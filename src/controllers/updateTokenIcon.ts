@@ -84,12 +84,12 @@ export const uploadTokenIcon = async (
     }
 
     // does contract have iconUri function
+    const abi = [
+      "function owner() view returns (address)",
+      "function iconUri() view returns (string)",
+    ];
+    const provider = getProvider()
     try {
-      const abi = [
-        "function owner() view returns (address)",
-        "function iconUri() view returns (string)",
-      ];
-      const provider = getProvider()
       const contract = new Contract(contractAddress, abi, provider as any);
       const iconUri = await contract.iconUri()
       if(iconUri) res.status(403).send("icon already exists");
