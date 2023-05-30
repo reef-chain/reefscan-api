@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import {u8aToHex} from "@polkadot/util";
 import {decodeAddress, signatureVerify} from "@reef-defi/util-crypto";
 import { updateVerifiedContractData } from '../services/verification';
-import {Contract} from 'ethers';
+import {Contract,ethers} from 'ethers';
 
 export const findVerifiedContract = async (
   id: string,
@@ -93,11 +93,16 @@ export const uploadTokenIcon = async (
       const contract = new Contract(contractAddress, abi, provider as any);
       const iconUri = await contract.iconUri()
       if(iconUri) res.status(403).send("icon already exists");
+      try {
+        const owner = await contract.owner()
+        if(owner && owner !== ethers.constants.AddressZero && owner !== signerAddress) res.status(403).send("not contract owner");
+      } catch (error) {}
     } catch (error) {}
+
 
     // who is owner of contract?
     const contract = await getVerifiedContract(contractAddress);
-    const ownerOfContract = contract.contract.signer.id;
+    const contractDeployer = contract.contract.signer.id;
     const lastUpdatedOn = contract.contractData['updatedOn'];
     
     // if request is being sent again [ someone stole the request by intercepting network ]
@@ -106,7 +111,7 @@ export const uploadTokenIcon = async (
     }
 
     // check if signer is owner
-    if(ownerOfContract!=signerAddress){
+    if(contractDeployer!=signerAddress){
       res.status(403).send("you are not the owner")
     }else{
       // uploads file to ipfs
