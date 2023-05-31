@@ -89,21 +89,23 @@ export const uploadTokenIcon = async (
       "function iconUri() view returns (string)",
     ];
     const provider = getProvider()
+    const contract = new Contract(contractAddress, abi, provider as any);
+    
     try {
-      const contract = new Contract(contractAddress, abi, provider as any);
       const iconUri = await contract.iconUri()
       if(iconUri) res.status(403).send("icon already exists");
-      try {
-        const owner = await contract.owner()
-        if(owner && owner !== ethers.constants.AddressZero && owner !== signerAddress) res.status(403).send("not contract owner");
-      } catch (error) {}
+    } catch (error) {}
+
+    try {
+      const owner = await contract.owner()
+      if(owner && owner !== ethers.constants.AddressZero && owner !== signerAddress) res.status(403).send("not contract owner");
     } catch (error) {}
 
 
     // who is owner of contract?
-    const contract = await getVerifiedContract(contractAddress);
-    const contractDeployer = contract.contract.signer.id;
-    const lastUpdatedOn = contract.contractData['updatedOn'];
+    const contractDetails = await getVerifiedContract(contractAddress);
+    const contractDeployer = contractDetails.contract.signer.id;
+    const lastUpdatedOn = contractDetails.contractData['updatedOn'];
     
     // if request is being sent again [ someone stole the request by intercepting network ]
     if(lastUpdatedOn!= undefined && lastUpdatedOn>uploadTimestamp){
