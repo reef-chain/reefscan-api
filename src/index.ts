@@ -6,6 +6,8 @@ import morgan from 'morgan';
 import config from './utils/config';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
+import updateTokenIconRouter from './routes/updateTokenIcon';
+import bodyParser from 'body-parser';
 import { fetchReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
@@ -72,6 +74,7 @@ export const verifiedContractRepository = config.network === 'mainnet'
 // app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
 
 // Parse incoming requests with JSON payloads
+app.use(bodyParser.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
@@ -82,6 +85,7 @@ app.use('/contract', contractRouter);
 app.use('/api/contract', contractRouter);
 app.use('/verification', verificationRouter);
 app.use('/api/verificator', verificationRouter);
+app.use('/api/updateTokenIcon',updateTokenIconRouter);
 
 // app.get('/api/price/fetch/reef', async (_, res: Response, next: NextFunction) => {
 //   try {

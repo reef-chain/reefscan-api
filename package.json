@@ -1,6 +1,6 @@
 {
   "name": "api",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Reef explorer API",
   "author": "Reef Chain",
   "license": "Apache-2.0",
@@ -16,6 +16,7 @@
     "@apollo/client": "^3.7.3",
     "@google-cloud/storage": "^6.9.5",
     "@reef-defi/evm-provider": "^1.0.10",
+    "@reef-defi/util-crypto": "^7.8.2",
     "@sentry/integrations": "^7.48.0",
     "@sentry/node": "^7.48.0",
     "@sentry/tracing": "^7.48.0",

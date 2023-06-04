@@ -1065,6 +1065,13 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
+"@babel/runtime@^7.16.0":
+  version "7.21.5"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.21.5.tgz#8492dddda9644ae3bda3b45eabe87382caee7200"
+  integrity sha512-8jI69toZqqcsnqGGqwGS4Qb1VwLOEp4hz+CXPywcvjs60u3B4Pom/U/7rm4W8tMOYEB+E9wgD0mW1l3r8qlI9Q==
+  dependencies:
+    regenerator-runtime "^0.13.11"
+
 "@babel/template@^7.18.10", "@babel/template@^7.20.7", "@babel/template@^7.3.3":
   version "7.20.7"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.20.7.tgz#a15090c2839a83b02aa996c0b4994005841fd5a8"
@@ -2356,7 +2363,7 @@
   dependencies:
     "@babel/runtime" "^7.17.2"
 
-"@polkadot/wasm-crypto@^4.4.1":
+"@polkadot/wasm-crypto@^4.2.1", "@polkadot/wasm-crypto@^4.4.1":
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/@polkadot/wasm-crypto/-/wasm-crypto-4.6.1.tgz#12f8481e6f9021928435168beb0697d57ff573e9"
   integrity sha512-2wEftBDxDG+TN8Ah6ogtvzjdZdcF0mAjU4UNNOfpmkBCxQYZOrAHB8HXhzo3noSsKkLX7PDX57NxvJ9OhoTAjw==
@@ -2459,6 +2466,13 @@
     blakejs "~1.1.0"
     ethers "~5.5.0"
 
+"@reef-defi/networks@7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@reef-defi/networks/-/networks-7.8.2.tgz#52d2e0bbbfbf61449ae410a4b79a46b222ecf7bc"
+  integrity sha512-ZOVH67ztkbXhqewcvv4O76L5om+eKAKUAc1a3qabJBBe9RLAnYuTc1p9uhWt/aHqdCqvuIiAGgBpMY9sWmokIQ==
+  dependencies:
+    "@babel/runtime" "^7.16.0"
+
 "@reef-defi/type-definitions@^1.0.4":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@reef-defi/type-definitions/-/type-definitions-1.1.0.tgz#c3cd7c1d29ad9d168a2675d1046046520828b7f2"
@@ -2477,6 +2491,73 @@
     "@polkadot/api" "~6.4.2"
     "@polkadot/typegen" "~6.4.2"
     "@polkadot/types" "~6.4.2"
+
+"@reef-defi/util-crypto@^7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@reef-defi/util-crypto/-/util-crypto-7.8.2.tgz#eb99650bd9786c8b592d413e5be24b7436720569"
+  integrity sha512-QbsNy6gp3yR/Pt4v0lpHdqTjrdP8fpomRBBcHmv0WoyefSQH636vIDDbdqAiSo7uuNa/nOWOICJk1+HKHr4eHg==
+  dependencies:
+    "@babel/runtime" "^7.16.0"
+    "@polkadot/wasm-crypto" "^4.2.1"
+    "@reef-defi/networks" "7.8.2"
+    "@reef-defi/util" "7.8.2"
+    "@reef-defi/x-randomvalues" "7.8.2"
+    base-x "^3.0.9"
+    base64-js "^1.5.1"
+    blakejs "^1.1.1"
+    bn.js "^4.12.0"
+    create-hash "^1.2.0"
+    ed2curve "^0.3.0"
+    elliptic "^6.5.4"
+    hash.js "^1.1.7"
+    js-sha3 "^0.8.0"
+    scryptsy "^2.1.0"
+    tweetnacl "^1.0.3"
+    xxhashjs "^0.2.2"
+
+"@reef-defi/util@7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@reef-defi/util/-/util-7.8.2.tgz#8f03851211fb82f6afa6158641068fa6d4793ad7"
+  integrity sha512-gPtSVDqUsAK1uEjQ8XyRgjlWIUMTo1qq+AO4IoYH/xc5jjQkEJ9rYwbYD3x8ZgB1Zca/uOjNbAVRp0LVmDABaA==
+  dependencies:
+    "@babel/runtime" "^7.16.0"
+    "@reef-defi/x-textdecoder" "7.8.2"
+    "@reef-defi/x-textencoder" "7.8.2"
+    "@types/bn.js" "^4.11.6"
+    bn.js "^4.12.0"
+    camelcase "^6.2.0"
+    ip-regex "^4.3.0"
+
+"@reef-defi/x-global@7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@reef-defi/x-global/-/x-global-7.8.2.tgz#9a2dba2fb9fa4edd6d0b831da7afda469f94636e"
+  integrity sha512-XZ0BfOCkAFgeszI6WxO41Dt6fWG6EOdDhNuJp+zCmrCgmorMna/UBKNwrGbXfGKTqRF2P4y/pZdzg4D4gKYEAg==
+  dependencies:
+    "@babel/runtime" "^7.16.0"
+
+"@reef-defi/x-randomvalues@7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@reef-defi/x-randomvalues/-/x-randomvalues-7.8.2.tgz#060394c177060a645120f4cd4928052b2f32fc0d"
+  integrity sha512-ldeMqOp/XhwYhMbZRfxa+iLVjGumorb0GBJf3O1XitSe3BFXRRykE1pHKeOk/TIh96vXRziXLYhKgs4KHMoBKQ==
+  dependencies:
+    "@babel/runtime" "^7.16.0"
+    "@reef-defi/x-global" "7.8.2"
+
+"@reef-defi/x-textdecoder@7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@reef-defi/x-textdecoder/-/x-textdecoder-7.8.2.tgz#17f9cbbb3b84c1b0c315cb9f847602a31404d63a"
+  integrity sha512-/VdkDbIqwHyhh0OJqPuZvV36GfRsgMOxHDSuoQnSqHW8sUlzWCycxh79c3GNV3YV/7Jf5PnVApI9/8fV7pbdDA==
+  dependencies:
+    "@babel/runtime" "^7.16.0"
+    "@reef-defi/x-global" "7.8.2"
+
+"@reef-defi/x-textencoder@7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@reef-defi/x-textencoder/-/x-textencoder-7.8.2.tgz#ffa05a6d319693fd01fd31389a02d0125a887626"
+  integrity sha512-UMNvqcIC1FBVLNDF/gvq98/CRmIw39kY8+E8p4MRnKADriexvfgST37hTrUptmDKXSJSllilJtvz0DLfLiR3jA==
+  dependencies:
+    "@babel/runtime" "^7.16.0"
+    "@reef-defi/x-global" "7.8.2"
 
 "@rushstack/eslint-patch@^1.0.6":
   version "1.2.0"
@@ -3581,7 +3662,14 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-base64-js@^1.3.0, base64-js@^1.3.1:
+base-x@^3.0.9:
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/base-x/-/base-x-3.0.9.tgz#6349aaabb58526332de9f60995e548a53fe21320"
+  integrity sha512-H7JU6iBHTal1gp56aKoaa//YUxEaAOUiydvrV/pILqIHXTtqxSkATOnDA2u+jZ/61sD+L/412+7kzXRtWukhpQ==
+  dependencies:
+    safe-buffer "^5.0.1"
+
+base64-js@^1.3.0, base64-js@^1.3.1, base64-js@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
