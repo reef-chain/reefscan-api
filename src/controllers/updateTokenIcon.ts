@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { getProvider, query } from '../utils/connector';
 import { AppRequest } from '../utils/types';
-import { ensure, toChecksumAddress } from '../utils/utils';
+import { ensure, findNativeAddress, toChecksumAddress } from '../utils/utils';
 import { upload } from '../services/updateTokenIcon';
 import crypto from 'crypto';
 import {u8aToHex} from "@polkadot/util";
@@ -98,7 +98,8 @@ export const uploadTokenIcon = async (
 
     try {
       const owner = await contract.owner()
-      if(owner && owner !== ethers.constants.AddressZero && owner !== signerAddress) res.status(403).send("not contract owner");
+      const nativeAddress = await findNativeAddress(owner);
+      if(owner && owner !== ethers.constants.AddressZero && nativeAddress !== signerAddress) res.status(403).send("not contract owner");
     } catch (error) {}
 
 
