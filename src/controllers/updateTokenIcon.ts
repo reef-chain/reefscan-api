@@ -100,12 +100,13 @@ export const uploadTokenIcon = async (
       const owner = await contract.owner()
       const nativeAddress = await findNativeAddress(owner);
       if(owner && owner !== ethers.constants.AddressZero && nativeAddress !== signerAddress) res.status(403).send("not contract owner");
-    } catch (error) {}
+    } catch (error) {
+      res.status(403).send("Owner function doesn't exist");
+    }
 
 
-    // who is owner of contract?
+    // contract details
     const contractDetails = await getVerifiedContract(contractAddress);
-    const contractDeployer = contractDetails.contract.signer.id;
     const lastUpdatedOn = contractDetails.contractData['updatedOn'];
     
     // if request is being sent again [ someone stole the request by intercepting network ]
@@ -113,10 +114,6 @@ export const uploadTokenIcon = async (
       res.status(403).send("malicious intent");
     }
 
-    // check if signer is owner
-    if(contractDeployer!=signerAddress){
-      res.status(403).send("you are not the owner")
-    }else{
       // uploads file to ipfs
       upload(file).then(hash=>{
         updateVerifiedContractData(contractAddress,{'iconUrl':'ipfs://'+hash});
@@ -124,5 +121,4 @@ export const uploadTokenIcon = async (
       }).catch(error => {
         res.status(403).send("encountered some error");
       });
-    }
 };
