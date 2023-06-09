@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { getProvider, query } from '../utils/connector';
 import { AppRequest } from '../utils/types';
-import { ensure, toChecksumAddress } from '../utils/utils';
+import { ensure, findNativeAddress, toChecksumAddress } from '../utils/utils';
 import { upload } from '../services/updateTokenIcon';
 import crypto from 'crypto';
 import {u8aToHex} from "@polkadot/util";
@@ -70,17 +70,20 @@ export const uploadTokenIcon = async (
     // if image is more than 500KB return
     if(imageSizeInKB>500){
       res.status(403).send("image too big");
+      return;
     }
 
     // obtaining file hash and comparing to check if it is same file
     const calculatedFileHash = generateSHA256Hash(JSON.stringify(fileData));
     if(calculatedFileHash !== fileHash){
-      res.status(403).send('different file uploaded')
+      res.status(403).send('different file uploaded');
+      return;
     }
 
     // checking validity of signature
     if(!isValidSignature(calculatedFileHash,signature,signerAddress)){
       res.status(403).send('invalid signature');
+      return;
     }
 
     // does contract have iconUri function
@@ -93,35 +96,42 @@ export const uploadTokenIcon = async (
     
     try {
       const iconUri = await contract.iconUri()
-      if(iconUri) res.status(403).send("icon already exists");
+      if(iconUri) {
+        res.status(403).send("icon already exists");
+        return;
+      }
     } catch (error) {}
 
     try {
       const owner = await contract.owner()
-      if(owner && owner !== ethers.constants.AddressZero && owner !== signerAddress) res.status(403).send("not contract owner");
-    } catch (error) {}
+      const nativeAddress = await findNativeAddress(owner);
+      if(owner && owner !== ethers.constants.AddressZero && nativeAddress !== signerAddress) {
+        res.status(403).send("not contract owner");
+        return;
+      }
+    } catch (error) {
+      res.status(403).send("Owner function doesn't exist");
+      return;
+    }
 
 
-    // who is owner of contract?
+    // contract details
     const contractDetails = await getVerifiedContract(contractAddress);
-    const contractDeployer = contractDetails.contract.signer.id;
     const lastUpdatedOn = contractDetails.contractData['updatedOn'];
     
     // if request is being sent again [ someone stole the request by intercepting network ]
     if(lastUpdatedOn!= undefined && lastUpdatedOn>uploadTimestamp){
       res.status(403).send("malicious intent");
+      return;
     }
 
-    // check if signer is owner
-    if(contractDeployer!=signerAddress){
-      res.status(403).send("you are not the owner")
-    }else{
       // uploads file to ipfs
       upload(file).then(hash=>{
         updateVerifiedContractData(contractAddress,{'iconUrl':'ipfs://'+hash});
-      res.status(200).send(`token updated successfully at ${hash}`);
+        res.status(200).send(`token updated successfully at ${hash}`);
+        return;
       }).catch(error => {
         res.status(403).send("encountered some error");
+        return;
       });
-    }
 };
