@@ -2,10 +2,11 @@ import axios from 'axios';
 import FormData from 'form-data';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
+import config from '../utils/config';
 
 export const upload = async (base64String) => {
-  const projectId = process.env.INFURA_IPFS_PROJECT_ID;
-  const projectSecret = process.env.INFURA_IPFS_KEY;
+  const projectId = config.ipfsGatewayId;
+  const projectSecret = config.ipfsGatewayKey;
   const buffer = Buffer.from(base64String, 'base64');
   const stream = new Readable();
   stream.push(buffer);

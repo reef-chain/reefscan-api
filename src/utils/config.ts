@@ -29,7 +29,7 @@ const explorerApi = process.env[`GRAPHQL_API_${network.toUpperCase()}`] || '';
 const reefSwapApi = process.env[`REEF_SWAP_API_${network.toUpperCase()}`] || '';
 
 console.log('NETWORK=', network, ' RPC=', nodeWs, ' EXPLORER API=', explorerApi, ' SWAP API=', reefSwapApi ,' DB=', process.env.DB_HOST);
-
+console.log('IPFS=', process.env.INFURA_IPFS_PROJECT_ID);
 export default {
   httpPort: toNumber(3000, process.env.PORT),
   nodeWs: nodeWs,
@@ -51,4 +51,6 @@ export default {
   createBackupFromSquidOnStart: process.env.CREATE_BACKUP_FROM_SQUID_ON_START === 'true',
   dropTablesOnStart: process.env.DROP_TABLES_ON_START === 'true',
   localBackup: process.env.LOCAL_BACKUP === 'true',
+  ipfsGatewayId: process.env.INFURA_IPFS_PROJECT_ID!,
+  ipfsGatewayKey: process.env.INFURA_IPFS_KEY!,
 };
