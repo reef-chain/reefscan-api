@@ -127,6 +127,10 @@ export const uploadTokenIcon = async (
 
       // uploads file to ipfs
       upload(file).then(hash=>{
+        if(hash==undefined){
+          res.status(403).send('encountered some error');
+          return;
+        }
         updateVerifiedContractData(contractAddress,{'iconUrl':'ipfs://'+hash});
         res.status(200).send(`token updated successfully at ${hash}`);
         return;
