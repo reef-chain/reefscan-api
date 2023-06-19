@@ -2,6 +2,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
+import config from '../utils/config';
 
 export const upload = async (base64String) => {
   const projectId = process.env.IPFS_PROJECT_ID;
