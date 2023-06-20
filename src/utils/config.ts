@@ -53,4 +53,6 @@ export default {
   localBackup: process.env.LOCAL_BACKUP === 'true',
   ipfsGatewayId: process.env.IPFS_PROJECT_ID!,
   ipfsGatewayKey: process.env.IPFS_PROJECT_SECRET!,
+  solidityScanEndpoint:process.env.SOLIDITY_SCAN_URL!,
+  solidityScanToken:process.env.SOLIDITY_SCAN_TOKEN!,
 };
