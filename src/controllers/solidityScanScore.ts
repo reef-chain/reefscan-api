@@ -32,7 +32,6 @@ export const getSolidityScanData =async (
     return res.json({
         'data':{
             'soldityScanScoreV2':scanSummary.score_v2,
-            'solidityScanThreatScore':scanSummary.threat_score,
             'critical':scanSummary.issue_severity_distribution.critical,
             'high':scanSummary.issue_severity_distribution.high,
             'scanner_reference_url':scanSummary.scanner_reference_url
