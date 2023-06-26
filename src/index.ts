@@ -35,36 +35,37 @@ const cors = require('cors');
 
 const app = express();
 
+if(config.sentryDns) {
+  Sentry.init({
+    dsn: config.sentryDns,
+    integrations: [
+      new RewriteFrames({
+        root: global.__dirname,
+      }),
+      // enable HTTP calls tracing
+      new Sentry.Integrations.Http({tracing: true}),
+      // enable Express.js middleware tracing
+      new Tracing.Integrations.Express({app}),
+      // Automatically instrument Node.js libraries and frameworks
+      ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
+    ],
 
-Sentry.init({
-  dsn: config.sentryDns,
-  integrations: [
-    new RewriteFrames({
-      root: global.__dirname,
-    }),
-    // enable HTTP calls tracing
-    new Sentry.Integrations.Http({ tracing: true }),
-    // enable Express.js middleware tracing
-    new Tracing.Integrations.Express({ app }),
-    // Automatically instrument Node.js libraries and frameworks
-    ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
-  ],
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+    environment: config.environment,
+  });
 
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-  environment: config.environment,
-});
-
-Sentry.setTag('component', 'api');
-Sentry.setTag('network', config.network);
+  Sentry.setTag('component', 'api');
+  Sentry.setTag('network', config.network);
 
 // RequestHandler creates a separate execution context, so that all
 // transactions/spans/breadcrumbs are isolated across requests
-app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
-app.use(Sentry.Handlers.tracingHandler());
+  app.use(Sentry.Handlers.tracingHandler());
+}
 
 export const verifiedContractRepository = config.network === 'mainnet'
   ? sequelize.getRepository(VerifiedContractMainnet)

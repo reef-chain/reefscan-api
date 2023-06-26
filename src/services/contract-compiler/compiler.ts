@@ -148,15 +148,22 @@ const compileContracts = async (name: string, filename: string, source: Source, 
 };
 
 export default async (
-  deployedBytecode: string, 
+  deployedBytecode: string,
   { name, filename, source, compilerVersion, target, optimization, runs }: AutomaticContractVerificationReq
 ): Promise<VerifyContract> => {
   const src = JSON.parse(source);
   const { abi, fullAbi, fullBytecode, fullRuntimeBytecode } = await compileContracts(name, filename, src, compilerVersion, target, optimization === 'true', runs);
   const rpcBytecode = preprocess(deployedBytecode);
   let parsedBytecode = preprocess(fullBytecode);
+  process.stdout.write('DEPL='+deployedBytecode + '\n');
+  console.log('#########################')
+  process.stdout.write('PARS='+parsedBytecode + '\n');
+  console.log('#########################')
+  process.stdout.write('RPC='+rpcBytecode + '\n');
   if (parsedBytecode !== rpcBytecode) {
     // If creation bytecode does not match, try runtime bytecode
+    //console.log('DEPPP=',deployedBytecode.substr(0,250))
+    //console.log('full=',fullBytecode.substr(0,250))
     parsedBytecode = preprocess(fullRuntimeBytecode);
     ensure(parsedBytecode === rpcBytecode, 'Compiled bytecode is not the same as deployed one');
   }
