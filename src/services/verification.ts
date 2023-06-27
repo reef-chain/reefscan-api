@@ -79,7 +79,7 @@ interface UpdateContract {
   approved?: boolean;
 }
 
-const fileStorageService: FileStorageService = config.localBackup 
+const fileStorageService: FileStorageService = config.localBackup
   ? new LocalStorage() : new GCPStorage(`subsquid-api-backup-${config.network}`);
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
@@ -412,9 +412,13 @@ const notifyVerifiedContractApprovedInReefSwap = async (
   try {
     const statement = `mutation{updateTokenApproved(id: "${id}", approved: ${approved})}`;
     const result = await reefSwapClient.mutate({ mutation: gql(statement) });
-    console.log(`Notify token approved: ${result.data.updateTokenApproved}`);
+    if(config.debug) {
+      console.log(`Notify token approved: ${result.data.updateTokenApproved}`);
+    }
   } catch (error) {
-    console.error(`Notify token approved ERROR: ${error}`)
+    if(config.debug) {
+      console.error(`Notify token approved ERROR: ${error}`)
+    }
   }
 };
 
@@ -488,11 +492,15 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
   const verifiedPending = await verifiedContractRepository.findAll({
     where: { address: { [Op.notIn]: verifiedIds } }
   });
-  console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
+  if(config.debug) {
+    console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
+  }
 
   let count = 0;
   for (const verifiedContract of verifiedPending) {
-    console.log(`Verifying ${verifiedContract.address} [${++count}/${verifiedPending.length}]`)
+    if(config.debug) {
+      console.log(`Verifying ${verifiedContract.address} [${++count}/${verifiedPending.length}]`)
+    }
     try {
       await verify({
         name: verifiedContract.name,
