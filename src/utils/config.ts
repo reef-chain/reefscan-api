@@ -53,4 +53,5 @@ export default {
   localBackup: process.env.LOCAL_BACKUP === 'true',
   ipfsGatewayId: process.env.IPFS_PROJECT_ID!,
   ipfsGatewayKey: process.env.IPFS_PROJECT_SECRET!,
+  debug: process.env.DEBUG
 };

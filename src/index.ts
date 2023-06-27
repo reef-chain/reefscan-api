@@ -112,11 +112,13 @@ app.use(
 const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   const status = err instanceof StatusError ? err.status : 400;
   const message = err.message || 'Something went wrong';
-  console.log('ERROR=',{
-    // request: req,
-    message,
-    status,
-  });
+  if(config.debug) {
+    console.log('ERROR=',{
+      // request: req,
+      message,
+      status,
+    });
+  }
   res.status(status).send({ error: message });
 };
 
