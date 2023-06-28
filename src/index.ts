@@ -15,8 +15,9 @@ import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
 import { createBackupFromSquid, importBackupFromFiles } from './services/verification';
-import {getReefPrice} from "./routes/price";
-import {getVersion} from "./routes/version";
+import { getReefPrice } from "./routes/price";
+import { getVersion } from "./routes/version";
+import { Umzug, SequelizeStorage } from "umzug";
 
 /* eslint "no-underscore-dangle": "off" */
 /*Sentry.init({
@@ -134,7 +135,19 @@ const server = app.listen(config.httpPort, async () => {
     Sentry.captureException(error);
   }
   await sequelize.sync({ force: config.dropTablesOnStart });
+
+  if (!config.dropTablesOnStart) {
+    // Run migrations
+    const umzug = new Umzug({
+      migrations: { glob: 'migrations/*.js' },
+      context: sequelize.getQueryInterface(),
+      storage: new SequelizeStorage({ sequelize }),
+      logger: console,
+    });
+    (async () => { await umzug.up() })();
+  }
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
+
   if (config.importBackupOnStart) {
     importBackupFromFiles();
   } else if (config.createBackupFromSquidOnStart) {
