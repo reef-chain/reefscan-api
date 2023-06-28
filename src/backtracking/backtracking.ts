@@ -5,13 +5,16 @@ import { ethers } from 'ethers';
 import { insertTransfers, processTokenTransfers } from './process/transfer';
 import { insertTokenHolders, processEvmTokenHolders } from './process/tokenHolder';
 import { updateEvmEventsDataParsed } from './process/evmEvent';
+import config from "../utils/config";
 
 interface Address {
   id: string;
 }
 
 const backtrackContractEvents = async (contractAddress: string): Promise<boolean> => {
-  console.log(`Retrieving contract ${contractAddress} unverified evm events`);
+  if(config.debug) {
+    console.log(`Retrieving contract ${contractAddress} unverified evm events`);
+  }
   let evmEvents = await query<BacktrackingEvmEvent[]>(
     'findBacktrackingEvmEvents',
     `query {
@@ -33,7 +36,9 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
   );
   if (!evmEvents) return false;
 
-  console.log(`There were ${evmEvents.length} unverified evm events`);
+  if(config.debug) {
+    console.log(`There were ${evmEvents.length} unverified evm events`);
+  }
   const contract = await query<VerifiedContract>(
     'verifiedContractById',
     `query {
@@ -48,7 +53,9 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
   );
 
   if (!contract) {
-    console.log(`Contract address: ${contractAddress} was not found in verified contract...`);
+    if(config.debug) {
+      console.log(`Contract address: ${contractAddress} was not found in verified contract...`);
+    }
     return false;
   }
 
@@ -90,16 +97,26 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
       fee: signeddata,
     }));
 
-  console.log('Processing transfer events');
+  if(config.debug) {
+    console.log('Processing transfer events');
+  }
   const transfers = await processTokenTransfers(evmLogs);
-  console.log('Processing token-holder events');
+  if(config.debug) {
+    console.log('Processing token-holder events');
+  }
   const tokenHolders = await processEvmTokenHolders(evmLogs);
 
-  console.log('Inserting Transfers');
+  if(config.debug) {
+    console.log('Inserting Transfers');
+  }
   if (!await insertTransfers(transfers)) return false;
-  console.log('Inserting Token holders');
+  if(config.debug) {
+    console.log('Inserting Token holders');
+  }
   if (!await insertTokenHolders(tokenHolders)) return false;
-  console.log('Updating evm events with parsed data');
+  if(config.debug) {
+    console.log('Updating evm events with parsed data');
+  }
   if (!await updateEvmEventsDataParsed(processedLogs.map((log) => { return { id: log.id, dataParsed: log.parseddata } }))) return false;
 
   console.log('Contract events updated successfully');
@@ -129,7 +146,9 @@ export const backtrackEvents = async () => {
           }`
         );
       } else {
-        console.log(`Error processing contract events for ${id}`);
+        if(config.debug) {
+          console.log(`Error processing contract events for ${id}`);
+        }
       }
     }
 

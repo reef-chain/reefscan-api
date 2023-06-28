@@ -41,6 +41,9 @@ export class VerifiedContractEntity extends Model<Partial<VerifiedContractEntity
   @Column(DataType.JSON)
   contractData!: any;
 
+  @Column(DataType.STRING)
+  iconUrl!: string;
+
   @Column(DataType.DOUBLE)
   timestamp!: number;
 

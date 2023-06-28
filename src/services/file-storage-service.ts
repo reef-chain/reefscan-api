@@ -1,4 +1,5 @@
 import {Bucket, Storage} from "@google-cloud/storage";
+import fs from 'fs';
 
 export interface FileStorageService {
     fileExists: (filePath: string) => Promise<boolean>;
@@ -56,7 +57,6 @@ export class GCPStorage implements FileStorageService {
         const exists = await storage.bucket(bucketName).exists();
             if (!exists[0]) {
                 const created=await storage.bucket(bucketName).create();
-                console.log('CCC',created[0]);
             }
         return storage.bucket(bucketName);
     }
@@ -71,5 +71,20 @@ export class GCPStorage implements FileStorageService {
     }
 }
 
+export class LocalStorage implements FileStorageService {
+    async fileExists(filePath: string): Promise<boolean> {
+        return fs.existsSync(filePath);
+    }
 
+    async readFile(filePath: string): Promise<string> {
+        return fs.readFileSync(filePath, 'utf8');
+    }
 
+    async writeFile(filePath: string, content: string): Promise<void> {
+        await fs.promises.writeFile(filePath, content);
+    }
+
+    async deleteFile(filePath: string): Promise<void> {
+        fs.unlinkSync(filePath);
+    }
+}
