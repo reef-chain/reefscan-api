@@ -44,3 +44,12 @@ yarn test
 **Set contract approved**: [`/verification/set-contract-approved`](api.md/#set-contract-approved)
 
 **Get REEF price**: [`/price/reef`](api.md/#get-reef-price)
+
+
+## DB Migrations
+
+Whenever the DB schema changes, it is required to create a new migration file. To do so:
+- Create a new file in the `migrations` folder with the following name format: `YYYYMMDDHHmmss_migration_name.ts`. This can be done manually or by installing the Sequelize CLI (`npm install -g sequelize-cli`) running `sequelize migration:generate --name addNewColumn`.
+- Add the migration code to the newly created file. The existing migrations can be used as a reference.
+
+The migrations will be run automatically when the app starts.
