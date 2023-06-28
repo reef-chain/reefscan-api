@@ -5,7 +5,7 @@ import {
   getVerifiedContract,
   verifyFromBackup,
   exportBackup,
-  setContractApproved
+  setContractApproved, importBackup
 } from '../controllers/verification';
 import { authMiddleware } from '../utils/auth.middleware';
 import { asyncHandler } from '../utils/utils';
@@ -18,6 +18,7 @@ router.post('/submit-verification', asyncHandler(submitVerification));
 router.get('/contract/:address', asyncHandler(getVerifiedContract));
 router.post('/verify-from-backup', authMiddleware, asyncHandler(verifyFromBackup));
 router.post('/export-backup', authMiddleware, asyncHandler(exportBackup));
+router.post('/import-backup', authMiddleware, asyncHandler(importBackup));
 router.post('/set-contract-approved', authMiddleware, asyncHandler(setContractApproved));
 
 export default router;
