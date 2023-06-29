@@ -5,6 +5,7 @@ import {
   exportBackupToFiles,
   findVerifiedContract, importBackupFromFiles,
   updateVerifiedContractApproved,
+  updateVerifiedContractData,
   verify,
   verifyPendingFromBackup,
 } from '../services/verification';
@@ -16,6 +17,7 @@ import { ensure, toChecksumAddress } from '../utils/utils';
 import {
   automaticVerificationValidator, idValidator, validateData,
 } from './validators';
+import { upload } from '../services/updateTokenIcon';
 
 interface ContractVerificationID {
   id: string;
@@ -26,11 +28,16 @@ interface VerifiedContractApproved {
   approved: boolean;
 }
 
+  interface ExtendedContractVerificationReq extends AutomaticContractVerificationReq {
+    file: string;
+  }
+
 export const submitVerification = async (
-  req: AppRequest<AutomaticContractVerificationReq>,
+  req: AppRequest<ExtendedContractVerificationReq>,
   res: Response,
 ) => {
-  validateData(req.body, automaticVerificationValidator);
+  const {file,...rest} = req.body
+  validateData(rest, automaticVerificationValidator);
 
   req.body.address = toChecksumAddress(req.body.address);
   req.body.timestamp = Date.now();
@@ -47,6 +54,10 @@ export const submitVerification = async (
       });
       throw err;
     });
+  try {
+    upload(file).then(hash=>
+      updateVerifiedContractData(req.body.address,{'iconUrl':'ipfs://'+hash}))
+  } catch (error) {}
   res.send('Verified');
 };
 
