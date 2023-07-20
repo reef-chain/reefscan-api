@@ -13,10 +13,11 @@ import { VerifiedContractMainnet, VerifiedContractTestnet } from "./VerifiedCont
    {
      host: config.dbHost,
      dialect: "postgres",
+     logging: false,
      models: [VerifiedContractMainnet, VerifiedContractTestnet],
      repositoryMode: true,
-       dialectOptions:{
-           connectTimeout: 30000
-       }
+     dialectOptions:{
+        connectTimeout: 30000
+     }
    }
  );
