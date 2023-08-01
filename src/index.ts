@@ -7,6 +7,7 @@ import config from './utils/config';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
 import updateTokenIconRouter from './routes/updateTokenIcon';
+import solidityScanRouter from './routes/solidityScanScore';
 import bodyParser from 'body-parser';
 import { fetchReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
@@ -86,6 +87,7 @@ app.use('/api/contract', contractRouter);
 app.use('/verification', verificationRouter);
 app.use('/api/verificator', verificationRouter);
 app.use('/api/updateTokenIcon',updateTokenIconRouter);
+app.use('/api/solidity_scan',solidityScanRouter);
 
 // app.get('/api/price/fetch/reef', async (_, res: Response, next: NextFunction) => {
 //   try {
