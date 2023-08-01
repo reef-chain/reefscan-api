@@ -3,7 +3,7 @@ import {
   contractVerificationRequestInsert,
   contractVerificationStatus,
   exportBackupToFiles,
-  findVerifiedContract,
+  findVerifiedContract, importBackupFromFiles,
   updateVerifiedContractApproved,
   verify,
   verifyPendingFromBackup,
@@ -84,6 +84,14 @@ export const exportBackup = async (
 ) => {
   exportBackupToFiles();
   res.send("Backup export process started");
+}
+
+export const importBackup = async (
+  _req: AppRequest<{}>,
+  res: Response,
+) => {
+  importBackupFromFiles();
+  res.send("Backup import process started");
 }
 
 export const setContractApproved = async (

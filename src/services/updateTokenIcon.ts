@@ -5,8 +5,8 @@ import { Readable } from 'stream';
 import config from '../utils/config';
 
 export const upload = async (base64String) => {
-  const projectId = config.ipfsGatewayId;
-  const projectSecret = config.ipfsGatewayKey;
+  const projectId = process.env.IPFS_PROJECT_ID;
+  const projectSecret = process.env.IPFS_PROJECT_SECRET;
   const buffer = Buffer.from(base64String, 'base64');
   const stream = new Readable();
   stream.push(buffer);

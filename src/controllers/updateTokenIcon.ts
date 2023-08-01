@@ -8,6 +8,7 @@ import {u8aToHex} from "@polkadot/util";
 import {decodeAddress, signatureVerify} from "@reef-defi/util-crypto";
 import { updateVerifiedContractData } from '../services/verification';
 import {Contract,ethers} from 'ethers';
+import config from "../utils/config";
 
 export const findVerifiedContract = async (
   id: string,
@@ -35,7 +36,9 @@ const getVerifiedContract = async (
   const contract = await findVerifiedContract(
     toChecksumAddress(contractId),
   );
-  console.log(contract)
+  if(config.debug) {
+    console.log(contract)
+  }
   ensure(!!contract, 'Contract does not exist');
   return contract;
 };
@@ -93,7 +96,7 @@ export const uploadTokenIcon = async (
     ];
     const provider = getProvider()
     const contract = new Contract(contractAddress, abi, provider as any);
-    
+
     try {
       const iconUri = await contract.iconUri()
       if(iconUri) {
@@ -118,7 +121,7 @@ export const uploadTokenIcon = async (
     // contract details
     const contractDetails = await getVerifiedContract(contractAddress);
     const lastUpdatedOn = contractDetails.contractData['updatedOn'];
-    
+
     // if request is being sent again [ someone stole the request by intercepting network ]
     if(lastUpdatedOn!= undefined && lastUpdatedOn>uploadTimestamp){
       res.status(403).send("malicious intent");
@@ -127,6 +130,10 @@ export const uploadTokenIcon = async (
 
       // uploads file to ipfs
       upload(file).then(hash=>{
+        if(hash==undefined){
+          res.status(403).send('encountered some error');
+          return;
+        }
         updateVerifiedContractData(contractAddress,{'iconUrl':'ipfs://'+hash});
         res.status(200).send(`token updated successfully at ${hash}`);
         return;

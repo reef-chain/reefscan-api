@@ -1,22 +1,15 @@
-import { mutate, query } from '../utils/connector';
+import {getProvider, mutate, query} from '../utils/connector';
 import verifyContract from './contract-compiler/compiler';
 import verifyContractArguments from './contract-compiler/argumentEncoder';
-import {
-  ABI,
-  AutomaticContractVerificationReq,
-  ContractType,
-  License,
-  Target,
-} from '../utils/types';
-import { buildBatches, ensure, toChecksumAddress, wait } from '../utils/utils';
+import {ABI, AutomaticContractVerificationReq, ContractType, License, Target,} from '../utils/types';
+import {buildBatches, ensure, toChecksumAddress, wait} from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
-import { verifiedContractRepository } from '..';
-import { Op } from 'sequelize';
+import {verifiedContractRepository} from '..';
+import {Op} from 'sequelize';
 import config from '../utils/config';
-import { VerifiedContractEntity } from '../db/VerifiedContract.db';
-import { getProvider } from '../utils/connector';
-import { FileStorageService, GCPStorage, LocalStorage } from "./file-storage-service";
-import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client/core';
+import {VerifiedContractEntity} from '../db/VerifiedContract.db';
+import {FileStorageService, GCPStorage, LocalStorage} from "./file-storage-service";
+import {ApolloClient, gql, HttpLink, InMemoryCache} from '@apollo/client/core';
 import fetch from "cross-fetch";
 
 interface Bytecode {
@@ -79,7 +72,7 @@ interface UpdateContract {
   approved?: boolean;
 }
 
-const fileStorageService: FileStorageService = config.localBackup 
+const fileStorageService: FileStorageService = config.localBackup
   ? new LocalStorage() : new GCPStorage(`subsquid-api-backup-${config.network}`);
 
 const checkLicense = (verification: AutomaticContractVerificationReq) => {
@@ -412,9 +405,13 @@ const notifyVerifiedContractApprovedInReefSwap = async (
   try {
     const statement = `mutation{updateTokenApproved(id: "${id}", approved: ${approved})}`;
     const result = await reefSwapClient.mutate({ mutation: gql(statement) });
-    console.log(`Notify token approved: ${result.data.updateTokenApproved}`);
+    if(config.debug) {
+      console.log(`Notify token approved: ${result.data.updateTokenApproved}`);
+    }
   } catch (error) {
-    console.error(`Notify token approved ERROR: ${error}`)
+    if(config.debug) {
+      console.error(`Notify token approved ERROR: ${error}`)
+    }
   }
 };
 
@@ -435,9 +432,9 @@ export const contractVerificationStatus = async (
 export const findVerifiedContract = async (
   id: string,
 ): Promise<VerifiedContract | null> => {
-  const verifiedContract = await query<VerifiedContract | null>(
-    'verifiedContractById',
-    `query {
+  return await query<VerifiedContract | null>(
+      'verifiedContractById',
+      `query {
       verifiedContractById(id: "${id}") {
         id
         name
@@ -456,7 +453,6 @@ export const findVerifiedContract = async (
       }
     }`
   );
-  return verifiedContract;
 };
 
 export const findAllVerifiedContractIds = async (): Promise<string[]> => {
@@ -488,11 +484,15 @@ export const verifyPendingFromBackup = async (): Promise<string> => {
   const verifiedPending = await verifiedContractRepository.findAll({
     where: { address: { [Op.notIn]: verifiedIds } }
   });
-  console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
+  if(config.debug) {
+    console.log(`Found ${verifiedPending.length} contracts to verify from backup`)
+  }
 
   let count = 0;
   for (const verifiedContract of verifiedPending) {
-    console.log(`Verifying ${verifiedContract.address} [${++count}/${verifiedPending.length}]`)
+    if(config.debug) {
+      console.log(`Verifying ${verifiedContract.address} [${++count}/${verifiedPending.length}]`)
+    }
     try {
       await verify({
         name: verifiedContract.name,
@@ -580,7 +580,7 @@ export const importBackupFromFiles = async (): Promise<void> => {
     if (await fileStorageService!.fileExists(fileName)) {
       const file = await fileStorageService.readFile(fileName);
       const contractBatch: VerifiedContractEntity[] = JSON.parse(file);
-      verifiedContractRepository.bulkCreate(contractBatch);
+      await verifiedContractRepository.bulkCreate(contractBatch);
       fileIndex++;
     } else {
       fileExists = false;
@@ -598,7 +598,7 @@ export const exportBackupToFiles = async (): Promise<void> => {
   while (fileExists) {
     const fileName = `backup/verified_${config.network}_${String(fileIndex).padStart(3, "0")}.json`;
     if (await fileStorageService.fileExists(fileName)) {
-      fileStorageService!.deleteFile(fileName);
+      await fileStorageService!.deleteFile(fileName);
       fileIndex++;
     } else {
       fileExists = false;

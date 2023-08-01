@@ -1,4 +1,5 @@
 import axios from 'axios';
+import config from "../utils/config";
 
 const REEF_DENOM = 'reef';
 
@@ -16,6 +17,8 @@ export const fetchReefPrice = async (): Promise<Price> => axios
   .then((res) => res.data[REEF_DENOM])
   .then((res) => ({ ...res }))
   .catch((err) => {
-    console.log(err);
+      if(config.debug) {
+          console.log(err);
+      }
     throw new Error('Can not extract reef price from coingecko...');
   });

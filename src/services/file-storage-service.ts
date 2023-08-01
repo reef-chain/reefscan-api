@@ -57,7 +57,6 @@ export class GCPStorage implements FileStorageService {
         const exists = await storage.bucket(bucketName).exists();
             if (!exists[0]) {
                 const created=await storage.bucket(bucketName).create();
-                console.log('CCC',created[0]);
             }
         return storage.bucket(bucketName);
     }
