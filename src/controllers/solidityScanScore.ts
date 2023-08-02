@@ -17,10 +17,16 @@ const fetchScanSummary = async(
     const headers = {
         'Authorization': `Token ${config.solidityScanToken}`
       };
-    const response = await axios.get(`${config.solidityScanEndpoint}${getChainId()}/${address}`,{headers});
-    response.data.scan_report.scan_summary['scanner_reference_url'] = response.data.scan_report.scanner_reference_url;
-    return response.data.scan_report.scan_summary
-}  
+    const contractScoreUrl = `${config.solidityScanEndpoint}${getChainId()}/${address}`;
+    try {
+        const response = await axios.get(contractScoreUrl, {headers});
+        response.data.scan_report.scan_summary['scanner_reference_url'] = response.data.scan_report.scanner_reference_url;
+        return response.data.scan_report.scan_summary;
+    }catch (e) {
+        console.log('solidityScan GET ',contractScoreUrl, ' ERR=',e.message);
+        throw new Error(e.message);
+    }
+}
 
 export const getSolidityScanData =async (
     req: AppRequest<any>,
@@ -28,7 +34,6 @@ export const getSolidityScanData =async (
 )=>{
     const contractAddress = req.params.address;
     const scanSummary = await fetchScanSummary(contractAddress)
-
     return res.json({
         'data':{
             'soldityScanScoreV2':scanSummary.score_v2,
