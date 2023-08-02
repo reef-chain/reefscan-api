@@ -1,6 +1,6 @@
 {
   "name": "api",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Reef explorer API",
   "author": "Reef Chain",
   "license": "Apache-2.0",
@@ -35,7 +35,8 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.28.0",
     "sequelize-typescript": "^2.1.5",
-    "solc": "^0.8.11"
+    "solc": "^0.8.11",
+    "umzug": "^3.2.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.22",
