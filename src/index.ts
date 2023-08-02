@@ -7,8 +7,8 @@ import config from './utils/config';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
 import updateTokenIconRouter from './routes/updateTokenIcon';
+import solidityScanRouter from './routes/solidityScanScore';
 import bodyParser from 'body-parser';
-import { fetchReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
@@ -44,7 +44,7 @@ Sentry.init({
       root: global.__dirname,
     }),
     // enable HTTP calls tracing
-    new Sentry.Integrations.Http({ tracing: true }),
+    new Sentry.Integrations.Http({ tracing: false }),
     // enable Express.js middleware tracing
     new Tracing.Integrations.Express({ app }),
     // Automatically instrument Node.js libraries and frameworks
@@ -65,7 +65,7 @@ Sentry.setTag('network', config.network);
 // transactions/spans/breadcrumbs are isolated across requests
 app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
-app.use(Sentry.Handlers.tracingHandler());
+// app.use(Sentry.Handlers.tracingHandler());
 
 export const verifiedContractRepository = config.network === 'mainnet'
   ? sequelize.getRepository(VerifiedContractMainnet)
@@ -87,6 +87,7 @@ app.use('/api/contract', contractRouter);
 app.use('/verification', verificationRouter);
 app.use('/api/verificator', verificationRouter);
 app.use('/api/updateTokenIcon',updateTokenIconRouter);
+app.use('/solidityScan/score',solidityScanRouter);
 
 // app.get('/api/price/fetch/reef', async (_, res: Response, next: NextFunction) => {
 //   try {
@@ -110,7 +111,7 @@ app.use(
 );
 
 /* eslint "no-unused-vars": "off" */
-const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+const errorHandler = (err: Error, req: Request, res: Response, _: NextFunction) => {
   const status = err instanceof StatusError ? err.status : 400;
   const message = err.message || 'Something went wrong';
   if(config.debug) {

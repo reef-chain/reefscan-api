@@ -29,7 +29,7 @@ const explorerApi = process.env[`GRAPHQL_API_${network.toUpperCase()}`] || '';
 const reefSwapApi = process.env[`REEF_SWAP_API_${network.toUpperCase()}`] || '';
 
 console.log('NETWORK=', network, ' RPC=', nodeWs, ' EXPLORER API=', explorerApi, ' SWAP API=', reefSwapApi ,' DB=', process.env.DB_HOST);
-console.log('IPFS=', process.env.IPFS_PROJECT_ID);
+
 export default {
   httpPort: toNumber(3000, process.env.PORT),
   nodeWs: nodeWs,
@@ -53,5 +53,7 @@ export default {
   localBackup: process.env.LOCAL_BACKUP === 'true',
   ipfsGatewayId: process.env.IPFS_PROJECT_ID!,
   ipfsGatewayKey: process.env.IPFS_PROJECT_SECRET!,
+  solidityScanEndpoint:process.env.SOLIDITY_SCAN_URL!,
+  solidityScanToken:process.env.SOLIDITY_SCAN_TOKEN!,
   debug: process.env.DEBUG
 };
