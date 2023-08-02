@@ -9,7 +9,6 @@ import verificationRouter from './routes/verification';
 import updateTokenIconRouter from './routes/updateTokenIcon';
 import solidityScanRouter from './routes/solidityScanScore';
 import bodyParser from 'body-parser';
-import { fetchReefPrice } from './services/utils';
 import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
@@ -87,7 +86,7 @@ app.use('/api/contract', contractRouter);
 app.use('/verification', verificationRouter);
 app.use('/api/verificator', verificationRouter);
 app.use('/api/updateTokenIcon',updateTokenIconRouter);
-app.use('/api/solidity_scan',solidityScanRouter);
+app.use('/solidityScan/score',solidityScanRouter);
 
 // app.get('/api/price/fetch/reef', async (_, res: Response, next: NextFunction) => {
 //   try {
@@ -111,7 +110,7 @@ app.use(
 );
 
 /* eslint "no-unused-vars": "off" */
-const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+const errorHandler = (err: Error, req: Request, res: Response, _: NextFunction) => {
   const status = err instanceof StatusError ? err.status : 400;
   const message = err.message || 'Something went wrong';
   if(config.debug) {
