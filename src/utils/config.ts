@@ -29,7 +29,7 @@ const explorerApi = process.env[`GRAPHQL_API_${network.toUpperCase()}`] || '';
 const reefSwapApi = process.env[`REEF_SWAP_API_${network.toUpperCase()}`] || '';
 
 console.log('NETWORK=', network, ' RPC=', nodeWs, ' EXPLORER API=', explorerApi, ' SWAP API=', reefSwapApi ,' DB=', process.env.DB_HOST);
-console.log('IPFS=', process.env.IPFS_PROJECT_ID);
+
 export default {
   httpPort: toNumber(3000, process.env.PORT),
   nodeWs: nodeWs,

@@ -43,7 +43,7 @@ Sentry.init({
       root: global.__dirname,
     }),
     // enable HTTP calls tracing
-    new Sentry.Integrations.Http({ tracing: true }),
+    new Sentry.Integrations.Http({ tracing: false }),
     // enable Express.js middleware tracing
     new Tracing.Integrations.Express({ app }),
     // Automatically instrument Node.js libraries and frameworks
@@ -64,7 +64,7 @@ Sentry.setTag('network', config.network);
 // transactions/spans/breadcrumbs are isolated across requests
 app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
-app.use(Sentry.Handlers.tracingHandler());
+// app.use(Sentry.Handlers.tracingHandler());
 
 export const verifiedContractRepository = config.network === 'mainnet'
   ? sequelize.getRepository(VerifiedContractMainnet)
