@@ -36,9 +36,12 @@ export const getSolidityScanData =async (
     const scanSummary = await fetchScanSummary(contractAddress)
     return res.json({
         'data':{
-            'soldityScanScoreV2':scanSummary.score_v2,
+            'solidityScanThreatScore':scanSummary.threat_score,
             'critical':scanSummary.issue_severity_distribution.critical,
             'high':scanSummary.issue_severity_distribution.high,
+            'low':scanSummary.issue_severity_distribution.low,
+            'medium':scanSummary.issue_severity_distribution.medium,
+            'informational':scanSummary.issue_severity_distribution.informational,
             'scanner_reference_url':scanSummary.scanner_reference_url
         }});
 }
