@@ -36,8 +36,7 @@ router.post('/', async (req, res) => {
                 eventsCount: 0
             } as any);
         }
-
-        await axios.get(`${baseUrl}/brokers/pixel`, {
+        await axios.get(`${baseUrl}/pixel`, {
             params: {
              //todo: @anukulpandey - add enum for actions and pass here 
               vid: vid
