@@ -10,17 +10,21 @@ import {
 export class MagicSquareEntity extends Model<MagicSquareEntity> {
   @PrimaryKey
   @Column(DataType.STRING)
-  vid!: string;
+  msUserId!: string;
 
   @PrimaryKey
   @Column(DataType.STRING)
-  eventId!: string;
+  eventType!: string;
+
+  @PrimaryKey
+  @Column(DataType.STRING)
+  network!: string;
 
   @Column(DataType.STRING)
   address!: string;
 
   @Column(DataType.INTEGER)
-  eventsCount!: number;
+  eventCount!: number;
 }
 
 @Table({ tableName: "magicsquare", modelName: "MagicSquare" })
