@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const router = Router();
 
-const baseUrl = "https://magic.lol/4bbad3f1/"
+const baseUrl = "https://magic.lol/4bbad3f1"
 type Network = 'mainnet' | 'testnet';
 enum EventType {
     'swap' = 7,
@@ -43,12 +43,12 @@ router.post('/', async (req, res) => {
                 eventCount: 0
             } as any);
         }
-        await axios.get(`${baseUrl}/pixel`, {
+        await axios.get(`${baseUrl}/v`, {
             params: {
-             //todo: @anukulpandey - add enum for actions and pass here
-              vid: msUserId
-                // something like this - we can pass string and magicSquare has integer identifier
-                //action: EventType[eventType]
+              vid: msUserId,
+                action: EventType[eventType],
+                lp:353,
+                affid:7540086315
             }
           });
         res.status(200).send({
