@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
                 eventCount: 0
             } as any);
         }
-        await axios.get(`${baseUrl}/v`, {
+        await axios.get(`${baseUrl}/pixel`, {
             params: {
               vid: msUserId,
                 action: EventType[eventType],
