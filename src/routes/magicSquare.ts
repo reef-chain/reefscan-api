@@ -23,7 +23,8 @@ interface MagicSquareParams {
 router.post('/', async (req, res) => {
     try {
         const { msUserId, eventType, network, address }:MagicSquareParams = req.body;
-
+console.log('body=', req.body)
+console.log('uid=', msUserId)
         let magicSquareRecord: MagicSquare | null = await sequelize.getRepository(MagicSquare).findOne({
             where: {
                 msUserId,
