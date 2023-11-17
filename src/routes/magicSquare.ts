@@ -35,29 +35,30 @@ console.log('uid=', msUserId)
         if (magicSquareRecord) {
             magicSquareRecord.eventCount +=1;
             await magicSquareRecord.save();
+            console.log('eventC=',magicSquareRecord.eventCount);
         } else {
             await sequelize.getRepository(MagicSquare).create({
                 msUserId,
                 eventType,
                 network,
                 address,
-                eventCount: 0
+                eventCount: 1
             } as any);
         }
         await axios.get(`${baseUrl}/pixel`, {
             params: {
               vid: msUserId,
-                action: EventType[eventType],
-                lp:353,
-                affid:7540086315
+                action: EventType[eventType]
             }
           });
         res.status(200).send({
             data: "updated data successfully"
         });
+        const ip = await axios.get(`https://api.ipify.org`);
+        console.log('ip=',ip);
         return;
     } catch (error) {
-        console.error(error);
+        console.error('ERR=',error);
         return res.status(500).send({
             error: "Internal Server Error"
         });
