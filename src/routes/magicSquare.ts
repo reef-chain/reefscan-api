@@ -45,6 +45,10 @@ console.log('uid=', msUserId)
                 eventCount: 1
             } as any);
         }
+
+        const ip = await axios.get(`https://api.ipify.org`);
+        console.log('ip=',ip);
+
         await axios.get(`${baseUrl}/pixel`, {
             params: {
               vid: msUserId,
@@ -54,8 +58,6 @@ console.log('uid=', msUserId)
         res.status(200).send({
             data: "updated data successfully"
         });
-        const ip = await axios.get(`https://api.ipify.org`);
-        console.log('ip=',ip);
         return;
     } catch (error) {
         console.error('ERR=',error);
