@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
             } as any);
         }
 
-        await axios.get(`${baseUrl}/pixel`, {
+        await axios.get(`${baseUrl}/brokers/pixel`, {
             params: {
                 vid: msUserId,
                 action: EventType[eventType]
