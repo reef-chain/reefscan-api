@@ -1,26 +1,24 @@
 import { Contract } from '@ethersproject/contracts';
-import {
-  ABI, ContractResolve, ERC20Data, ERC721Data,
-} from '../../utils/types';
+import { Interface } from '@ethersproject/abi';
+import { ABI, ContractResolve, ERC20Data, ERC721Data } from '../../utils/types';
 import { getProvider } from '../../utils/connector';
 import Erc20Abi from '../../assets/Erc20Abi';
 import Erc721Abi from '../../assets/Erc721Abi';
 import Erc1155Abi from '../../assets/Erc1155Abi';
-import { dropKey } from '../../utils/utils';
 
-const contractChecked = (abi: ABI, format: string[]): boolean => {
-  const fragments = abi
-    .map((fragment) => ({
-      ...fragment,
-      inputs: fragment.inputs?.map((i) => dropKey(i, 'name')),
-    }))
-    .map((fragment) => JSON.stringify(fragment));
+const contractChecked = (abi: ABI, ercAbi: ABI): boolean => {
+  const iface = new Interface(abi);
+  const ercIface = new Interface(ercAbi);
 
-  return format
-    .reduce(
-      (prev, currentFragment) => prev && fragments.includes(currentFragment),
-      true,
-    );
+  for (const functionName in ercIface.functions) {
+    if (!iface.functions[functionName]) return false;
+  }
+
+  for (const eventName in ercIface.events) {
+    if (!iface.events[eventName]) return false;
+  }
+
+  return true;
 };
 
 const checkIfContractIsERC20 = (abi: ABI): boolean => contractChecked(abi, Erc20Abi);
