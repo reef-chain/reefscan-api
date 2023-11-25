@@ -1,5 +1,4 @@
 import { ABI } from '../utils/types';
-import { dropKey } from '../utils/utils';
 
 export default ([
   {
@@ -314,9 +313,4 @@ export default ([
     stateMutability: 'view',
     type: 'function',
   },
-] as ABI)
-  .map((fragment) => ({
-    ...fragment,
-    inputs: fragment.inputs?.map((i) => dropKey(i, 'name')),
-  }))
-  .map((fragment) => JSON.stringify(fragment));
+] as ABI);
