@@ -1,5 +1,4 @@
 import { ABI } from '../utils/types';
-import { dropKey } from '../utils/utils';
 
 export default ([
   {
@@ -133,54 +132,6 @@ export default ([
     type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'spender',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'subtractedValue',
-        type: 'uint256',
-      },
-    ],
-    name: 'decreaseAllowance',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'spender',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'addedValue',
-        type: 'uint256',
-      },
-    ],
-    name: 'increaseAllowance',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
     inputs: [],
     name: 'name',
     outputs: [
@@ -272,9 +223,4 @@ export default ([
     stateMutability: 'nonpayable',
     type: 'function',
   },
-] as ABI)
-  .map((fragment) => ({
-    ...fragment,
-    inputs: fragment.inputs?.map((i) => dropKey(i, 'name')),
-  }))
-  .map((fragment) => JSON.stringify(fragment));
+] as ABI);

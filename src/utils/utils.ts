@@ -29,15 +29,6 @@ export const ensure = (
 
 export const toChecksumAddress = (address: string): string => utils.getAddress(address.trim().toLowerCase());
 
-export const dropKey = <T, Key extends keyof T>(
-  obj: T,
-  key: Key,
-): Omit<T, Key> => {
-  const newObj = { ...obj };
-  delete newObj[key];
-  return newObj;
-};
-
 // eslint-disable-next-line
 export const asyncHandler = (fun: (req: Request, res: Response, next: NextFunction) => Promise<any>) => (req: Request, res: Response, next: NextFunction): Promise<void> => fun(req, res, next).catch(next);
 
