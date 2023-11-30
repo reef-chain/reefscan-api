@@ -27,8 +27,9 @@ const network = process.env.NETWORK || 'mainnet';
 const nodeWs = process.env[`NODE_URL_${network.toUpperCase()}`] || '';
 const explorerApi = process.env[`GRAPHQL_API_${network.toUpperCase()}`] || '';
 const reefSwapApi = process.env[`REEF_SWAP_API_${network.toUpperCase()}`] || '';
+const reefSwapFactoryAddress = process.env[`REEF_SWAP_FACTORY_ADDRESS_${network.toUpperCase()}`] || '';
 
-console.log('NETWORK=', network, ' RPC=', nodeWs, ' EXPLORER API=', explorerApi, ' SWAP API=', reefSwapApi ,' DB=', process.env.DB_HOST);
+console.log('NETWORK=', network, ' RPC=', nodeWs, ' EXPLORER API=', explorerApi, ' SWAP API=', reefSwapApi ,' DB=', process.env.DB_HOST, ' FACTORY=', reefSwapFactoryAddress);
 
 export default {
   httpPort: toNumber(3000, process.env.PORT),
@@ -40,6 +41,7 @@ export default {
   reefSwapApi: reefSwapApi,
   jwtSecret: process.env.JWT_SECRET || '',
   reefSwapApiKey: process.env.REEF_SWAP_ADMIN_KEY || '',
+  reefSwapFactoryAddress: reefSwapFactoryAddress,
   chunkSize: toNumber(1024, process.env.CHUNK_SIZE),
   mutationSize: toNumber(100, process.env.MUTATION_SIZE),
   dbHost: process.env.DB_HOST!,
