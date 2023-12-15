@@ -47,8 +47,6 @@ export default {
   dbPassword: process.env.DB_PASSWORD!,
   dbName: process.env.DB_NAME!,
   adminPassword: process.env.ADMIN_PASSWORD!,
-  importBackupOnStart: process.env.IMPORT_BACKUP_ON_START === 'true',
-  createBackupFromSquidOnStart: process.env.CREATE_BACKUP_FROM_SQUID_ON_START === 'true',
   dropTablesOnStart: process.env.DROP_TABLES_ON_START === 'true',
   localBackup: process.env.LOCAL_BACKUP === 'true',
   ipfsGatewayId: process.env.IPFS_PROJECT_ID!,
