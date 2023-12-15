@@ -152,7 +152,7 @@ const server = app.listen(config.httpPort, async () => {
   }
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
 
-  // backtrackEvents();
+  backtrackEvents();
 });
 
 
