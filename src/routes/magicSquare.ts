@@ -24,7 +24,8 @@ interface MagicSquareParams {
 router.post('/', async (req, res) => {
     try {
         const {msUserId, eventType, network, address}: MagicSquareParams = req.body;
-
+console.log('magicsquare req et,net=', eventType, network);
+console.log('magicsquare req addr=',  address);
         let magicSquareRecord: MagicSquare | null = await sequelize.getRepository(MagicSquare).findOne({
             where: {
                 msUserId,
@@ -32,6 +33,7 @@ router.post('/', async (req, res) => {
                 network
             }
         });
+        console.log('got magicSquareRecord=',!!magicSquareRecord);
         if (magicSquareRecord) {
             magicSquareRecord.eventCount += 1;
             await magicSquareRecord.save();

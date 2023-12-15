@@ -5,6 +5,8 @@ import { getProvider } from '../../utils/connector';
 import Erc20Abi from '../../assets/Erc20Abi';
 import Erc721Abi from '../../assets/Erc721Abi';
 import Erc1155Abi from '../../assets/Erc1155Abi';
+import ReefswapV2PairAbi from '../../assets/ReefswapV2PairAbi';
+import config from '../../utils/config';
 
 const contractChecked = (abi: ABI, ercAbi: ABI): boolean => {
   const iface = new Interface(abi);
@@ -34,6 +36,38 @@ const extractERC20ContractData = async (address: string, abi: ABI): Promise<ERC2
     contract.decimals(),
     iconUriContract.iconUri().catch(() => ''),
   ]);
+
+  if (contractChecked(abi, ReefswapV2PairAbi)) {
+    // Is Reefswap pair
+    const [token0, token1] = await Promise.all([contract.token0(), contract.token1()]);
+    const factoryContract = new Contract(
+      config.reefSwapFactoryAddress,
+      ["function getPair(address token0, address token1) view returns (address)"],
+      getProvider()
+    );
+    const pairAddress = await factoryContract.getPair(token0, token1);
+    
+    if (pairAddress === address) {
+      // Pair is registered in Reefswap factory
+      const token0Contract = new Contract(token0, Erc20Abi, getProvider());
+      const token1Contract = new Contract(token1, Erc20Abi, getProvider());
+      const [name0, symbol0, name1, symbol1] = await Promise.all([
+        token0Contract.name(),
+        token0Contract.symbol(),
+        token1Contract.name(),
+        token1Contract.symbol()
+      ]);
+      
+      return { 
+        name: `${name0}-${name1} LP`,
+        symbol: `${symbol0}/${symbol1}-LP`,
+        decimals,
+        tokenUrl,
+        token0,
+        token1 
+      };
+    }
+  } 
 
   return { name, symbol, decimals, tokenUrl };
 };

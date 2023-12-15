@@ -20,6 +20,8 @@ export interface ERC721Data {
 export interface ERC20Data extends ERC721Data {
   decimals: number;
   tokenUrl?: string;
+  token0?: string;
+  token1?: string;
 }
 
 interface VerifiedERC20 {
