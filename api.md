@@ -1,4 +1,4 @@
-# API
+# Public endpoints
 
 ## Find contract
 
@@ -34,6 +34,7 @@
 
 boolean
 
+
 ## Submit verification
 
 **URL** : `/verification/submit`
@@ -61,6 +62,7 @@ boolean
 
 string
 
+
 ## Get verified contract
 
 **URL** : `/verification/contract/:address`
@@ -85,8 +87,25 @@ string
 | timestamp        | Date |
 
 
+## Get REEF price
+
+**URL** : `/price/reef`
+
+**Method** : `GET`
+
+**Return data** :
+
+| Name           |   Type    |
+|----------------|:---------:|
+| usd            |  number   |
+| usd_24h_change |  number   |
+| timestamp      | timestamp |
+
+
+# Admin endpoints
+
 ## Verify all from backup
-Triggers verification for contracts stored in backup database.
+Triggers verification for contracts `verified_contract` table.
 This end point is protected by admin password.
 
 **URL** : `/verification/verify-from-backup`
@@ -99,11 +118,39 @@ This end point is protected by admin password.
 | password       | string |
 
 
+## Backup from Squid
+Clears `verified_contract` table and populates it with data from Explorer Squid endpoint.
+This end point is protected by admin password.
+
+**URL** : `/verification/backup-from-squid`
+
+**Method** : `POST`
+
+**Request body**
+| Name           |  Type  |
+| -------------- | :----: |
+| password       | string |
+
+
 ## Export backup
-Saves backup database verified contracts into local files. This files can be used to populate the database on startup if env variable `IMPORT_BACKUP_ON_START` is set to true.
+Saves `verified_contract` table data into JSON files. This files can be used to populate the database via `import-backup` endpoint.
 This end point is protected by admin password.
 
 **URL** : `/verification/export-backup`
+
+**Method** : `POST`
+
+**Request body**
+| Name           |  Type  |
+| -------------- | :----: |
+| password       | string |
+
+
+## Import backup
+Clears `verified_contract` table and populates it with data from JSON files.
+This end point is protected by admin password.
+
+**URL** : `/verification/import-backup`
 
 **Method** : `POST`
 
@@ -127,18 +174,3 @@ This end point is protected by admin password.
 | address        | string |
 | approved       | boolean |
 | password       | string |
-
-
-## Get REEF price
-
-**URL** : `/price/reef`
-
-**Method** : `GET`
-
-**Return data** :
-
-| Name           |   Type    |
-|----------------|:---------:|
-| usd            |  number   |
-| usd_24h_change |  number   |
-| timestamp      | timestamp |

@@ -15,7 +15,6 @@ import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
-import { createBackupFromSquid, importBackupFromFiles } from './services/verification';
 import { getReefPrice } from "./routes/price";
 import { getVersion } from "./routes/version";
 import { Umzug, SequelizeStorage } from "umzug";
@@ -153,11 +152,6 @@ const server = app.listen(config.httpPort, async () => {
   }
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
 
-  if (config.importBackupOnStart) {
-    importBackupFromFiles();
-  } else if (config.createBackupFromSquidOnStart) {
-    createBackupFromSquid();
-  }
   backtrackEvents();
 });
 

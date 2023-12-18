@@ -2,6 +2,7 @@ import { Response } from 'express';
 import {
   contractVerificationRequestInsert,
   contractVerificationStatus,
+  createBackupFromSquid,
   exportBackupToFiles,
   findVerifiedContract, importBackupFromFiles,
   updateVerifiedContractApproved,
@@ -87,6 +88,14 @@ export const verifyFromBackup = async (
 ) => {
   verifyPendingFromBackup();
   res.send("Verification process started");
+};
+
+export const backupFromSquid = async (
+  _req: AppRequest<{}>,
+  res: Response,
+) => {
+  createBackupFromSquid();
+  res.send("Backup from Squid process started");
 };
 
 export const exportBackup = async (
