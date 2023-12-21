@@ -29,6 +29,8 @@ yarn test
 
 ## API
 
+### Public endpoints
+
 **Find contract** : [`/contract/:address`](api.md/#find-contract)
 
 **Get verification status** : [`/verification/status`](api.md/#get-verification-status)
@@ -37,13 +39,20 @@ yarn test
 
 **Get verified contract** : [`/verification/contract/:address`](api.md/#get-verified-contract)
 
-**Verify all from backup**: [`/verification/verify-from-backup`](api.md/#verify-all-from-backup)
+**Get REEF price**: [`/price/reef`](api.md/#get-reef-price)
 
-**Export backup**: [`/verification/export-backup`](api.md/#export-backup)
+
+### Admin endpoints
+
+**Verify all from backup** _(DB => Squid)_: [`/verification/verify-from-backup`](api.md/#verify-all-from-backup)
+
+**Backup from Squid** _(Squid => DB)_: [`/verification/backup-from-squid`](api.md/#create-backup-from-squid)
+
+**Export backup** _(DB => JSON files)_: [`/verification/export-backup`](api.md/#export-backup)
+
+**Import backup** _(JSON files => DB)_: [`/verification/import-backup`](api.md/#import-backup)
 
 **Set contract approved**: [`/verification/set-contract-approved`](api.md/#set-contract-approved)
-
-**Get REEF price**: [`/price/reef`](api.md/#get-reef-price)
 
 
 ## DB Migrations

@@ -552,6 +552,7 @@ export const createBackupFromSquid = async (): Promise<void> => {
     if (!verifiedContracts || !verifiedContracts.length) {
       moreAvailable = false;
     } else {
+      console.log(`Inserting contracts ${currIndex} to ${currIndex + verifiedContracts.length}`)
       moreAvailable = verifiedContracts.length === QUERY_LIMIT;
       await verifiedContractRepository.bulkCreate(
         verifiedContracts.map((contract) => ({
@@ -564,6 +565,7 @@ export const createBackupFromSquid = async (): Promise<void> => {
       currIndex += QUERY_LIMIT;
     }
   }
+  console.log('Finished creating backup');
 }
 
 // Imports verified contracts from JSON files to backup database
