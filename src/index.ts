@@ -18,6 +18,7 @@ import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedC
 import { getReefPrice } from "./routes/price";
 import { getVersion } from "./routes/version";
 import { Umzug, SequelizeStorage } from "umzug";
+import { trackFinalizedBlocks } from './services/finalized-blocks';
 
 /* eslint "no-underscore-dangle": "off" */
 /*Sentry.init({
@@ -153,6 +154,8 @@ const server = app.listen(config.httpPort, async () => {
   console.log(`Reef explorer API is running on port ${config.httpPort}.`);
 
   backtrackEvents();
+
+  trackFinalizedBlocks();
 });
 
 
