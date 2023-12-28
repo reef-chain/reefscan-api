@@ -29,7 +29,14 @@ const explorerApi = process.env[`GRAPHQL_API_${network.toUpperCase()}`] || '';
 const reefSwapApi = process.env[`REEF_SWAP_API_${network.toUpperCase()}`] || '';
 const reefSwapFactoryAddress = process.env[`REEF_SWAP_FACTORY_ADDRESS_${network.toUpperCase()}`] || '';
 
-console.log('NETWORK=', network, ' RPC=', nodeWs, ' EXPLORER API=', explorerApi, ' SWAP API=', reefSwapApi ,' DB=', process.env.DB_HOST, ' FACTORY=', reefSwapFactoryAddress);
+console.log(`
+  Network: ${network}
+  RPC: ${nodeWs}
+  Explorer API: ${explorerApi}
+  Swap API: ${reefSwapApi}
+  DB: ${process.env.DB_HOST}
+  Factory: ${reefSwapFactoryAddress}
+`);
 
 export default {
   httpPort: toNumber(3000, process.env.PORT),
