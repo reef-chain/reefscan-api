@@ -55,10 +55,14 @@ export const submitVerification = async (
       });
       throw err;
     });
-  try {
-    upload(file).then(hash=>
-      updateVerifiedContractData(req.body.address,{'iconUrl':'ipfs://'+hash}))
-  } catch (error) {}
+
+  if (file) {
+    try {
+      upload(file).then(hash=>
+        updateVerifiedContractData(req.body.address,{'iconUrl':'ipfs://'+hash}))
+    } catch (error) {}
+  }
+  
   res.send('Verified');
 };
 
