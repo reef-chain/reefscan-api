@@ -2,19 +2,19 @@ import axios from 'axios';
 import FormData from 'form-data';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
-import config from '../utils/config';
 
-export const upload = async (base64String) => {
+export const upload = async (base64String: string) => {
   const projectId = process.env.IPFS_PROJECT_ID;
   const projectSecret = process.env.IPFS_PROJECT_SECRET;
-  const buffer = Buffer.from(base64String, 'base64');
-  const stream = new Readable();
-  stream.push(buffer);
-  stream.push(null);
-  const formData = new FormData();
-  formData.append('file', stream);
 
   try {
+    const buffer = Buffer.from(base64String, 'base64');
+    const stream = new Readable();
+    stream.push(buffer);
+    stream.push(null);
+    const formData = new FormData();
+    formData.append('file', stream);
+
     const response = await axios.post('https://ipfs.infura.io:5001/api/v0/add', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
