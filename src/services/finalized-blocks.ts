@@ -1,8 +1,12 @@
 import { getProvider, mutate } from "../utils/connector";
 
 export const trackFinalizedBlocks = async () => {
+    let processing = false;
     getProvider().api.rpc.chain.subscribeFinalizedHeads(async (header) => {
-        mutate(`
+        if (processing) return;
+        processing = true;
+
+        await mutate(`
             mutation {
                 newFinalizedBlock(
                     height: ${header.number},
@@ -10,5 +14,6 @@ export const trackFinalizedBlocks = async () => {
                 )
             }
         `);
+        processing = false;
     });
 };
