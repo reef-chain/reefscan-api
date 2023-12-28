@@ -6,6 +6,6 @@ export const getVersion = (_, res: Response, next: NextFunction) => {
     return res.send({
         network: config.network,
         version: process.env.npm_package_version,
-        timestamp: (new Date()).getTime()
+        time: (new Date()).getTime()
     });
 };
