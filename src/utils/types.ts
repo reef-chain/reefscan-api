@@ -185,19 +185,12 @@ interface ABIS {
 
 interface EvmEvent {
   id: string;
-  blockid: string;
-  eventindex: number;
-  extrinsicindex: number;
-  contractaddress: string;
-  rawdata: RawEventData;
-  parseddata: ethers.utils.LogDescription;
-  method: string;
-  type: string;
-  status: string;
-  topic0: string;
-  topic1: string;
-  topic2: string;
-  topic3: string;
+  blockHeight: number;
+  blockHash: string;
+  extrinsicIndex: number;
+  rawData: RawEventData;
+  parsedData: ethers.utils.LogDescription;
+  finalized: boolean;
 }
 
 export type TokenType = 'ERC20' | 'ERC721' | 'ERC1155';
@@ -210,14 +203,16 @@ interface BytecodeLog {
   topics: string[];
 }
 
-interface BytecodeLogWithBlockId extends BytecodeLog {
-  blockId: string;
+interface BytecodeLogWithBlockData extends BytecodeLog {
+  blockHeight: number;
+  blockHash: string;
   timestamp: number;
-  extrinsicId: string;
+  extrinsicIndex: number;
   signedData: SignedExtrinsicData;
+  finalized: boolean;
 }
 
-interface EvmLog extends BytecodeLogWithBlockId {
+interface EvmLog extends BytecodeLogWithBlockData {
   id: string;
   abis: ABIS;
   name: string;
@@ -226,9 +221,8 @@ interface EvmLog extends BytecodeLogWithBlockId {
 }
 
 export interface BacktrackingEvmEvent extends EvmEvent {
-  extrinsicid: string;
   timestamp: number;
-  signeddata: SignedExtrinsicData;
+  signedData: SignedExtrinsicData;
 }
 
 export interface EvmEventDataParsed {
@@ -250,8 +244,9 @@ export interface EvmLogWithDecodedEvent extends EvmLog {
 
 export interface Transfer {
   id: string;
-  blockId: string;
-  extrinsicId: string;
+  blockHeight: number;
+  blockHash: string;
+  extrinsicIndex: number;
 
   toId: string;
   fromId: string;
@@ -271,6 +266,7 @@ export interface Transfer {
   errorMessage: string;
 
   timestamp: number;
+  finalized: boolean;
 }
 
 type TokenHolderType = 'Contract' | 'Account';
@@ -293,4 +289,8 @@ export interface TokenHolder extends TokenHolderBase {
   balance: string;
   type: TokenHolderType;
   signerId: string;
+}
+
+export interface SquidStatus {
+  height: number;
 }

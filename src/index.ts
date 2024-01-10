@@ -155,7 +155,9 @@ const server = app.listen(config.httpPort, async () => {
 
   backtrackEvents();
 
-  trackFinalizedBlocks();
+  if (config.trackFinalizedBlocks) {
+    trackFinalizedBlocks();
+  }
 });
 
 
