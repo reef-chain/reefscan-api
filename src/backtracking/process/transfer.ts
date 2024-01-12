@@ -5,7 +5,7 @@ import { buildBatches, findNativeAddress, resolvePromisesAsChunks, stringifyArra
 import { isErc1155TransferBatchEvent, isErc1155TransferSingleEvent, isErc20TransferEvent, isErc721TransferEvent } from './evmEvent';
 
 const evmLogToTransfer = async ({
-  id, timestamp, address, blockId, extrinsicId, signedData,
+  id, timestamp, address, blockHeight, blockHash, extrinsicIndex, signedData, finalized
 }: EvmLogWithDecodedEvent, fromEvmAddress: string, toEvmAddress: string): Promise<Transfer> => {
   const [toAddress, fromAddress] = await Promise.all([
     findNativeAddress(toEvmAddress),
@@ -14,19 +14,21 @@ const evmLogToTransfer = async ({
 
   return {
     id,
-    blockId,
-    timestamp,
-    extrinsicId,
-    toEvmAddress,
-    success: true,
-    fromEvmAddress,
-    errorMessage: '',
-    tokenId: address,
+    blockHeight,
+    blockHash,
+    extrinsicIndex,
     toId: toAddress === '' ? '0x' : toAddress,
     fromId: fromAddress === '' ? '0x' : fromAddress,
-    feeAmount: signedData.fee?.partialFee || '0',
-    amount: '0',
+    tokenId: address,
+    toEvmAddress,
+    fromEvmAddress,
     type: 'ERC20',
+    amount: '0',
+    feeAmount: signedData.fee?.partialFee || '0',
+    errorMessage: '',
+    success: true,
+    timestamp,
+    finalized
   };
 };
 

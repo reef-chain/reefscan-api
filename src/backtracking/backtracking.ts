@@ -20,17 +20,13 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
     `query {
       findBacktrackingEvmEvents(id: "${contractAddress}") {
         id
-        blockid
-        extrinsicid
-        eventindex
-        extrinsicindex
-        contractaddress
-        rawdata
-        method
-        type
-        status
+        blockHeight
+        blockHash
+        extrinsicIndex
+        rawData
         timestamp
-        signeddata
+        signedData
+        finalized
       }
     }`
   );
@@ -66,11 +62,10 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
   for (let i = 0; i < evmEvents.length; i++) {
     try {
       const evmEvent = evmEvents[i];
-      const parsedLog = contractInterface.parseLog(evmEvent.rawdata);
+      const parsedLog = contractInterface.parseLog(evmEvent.rawData);
       processedLogs.push({
         ...evmEvent,
-        parseddata: parsedLog,
-        type: 'Verified',
+        parsedData: parsedLog
       });
     } catch (error) {
       console.log('No matching logs ... Skipping');
@@ -79,22 +74,24 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
 
   const evmLogs: EvmLogWithDecodedEvent[] = processedLogs
     .map(({
-      id, timestamp, blockid, rawdata, extrinsicid, signeddata, parseddata,
+      id, timestamp, blockHash, blockHeight, rawData, extrinsicIndex, signedData, parsedData, finalized
     }) => ({
       id,
       name: contract.name,
       type: contract.type,
-      blockId: blockid,
+      blockHash,
+      blockHeight,
       address: contract.id,
       timestamp: new Date(timestamp).getTime(),
-      signedData: signeddata,
-      extrinsicId: extrinsicid,
+      signedData,
+      extrinsicIndex,
       contractData: contract.contractData,
       abis: contract.compiledData,
-      data: rawdata.data,
-      topics: rawdata.topics,
-      decodedEvent: parseddata,
-      fee: signeddata,
+      data: rawData.data,
+      topics: rawData.topics,
+      decodedEvent: parsedData,
+      fee: signedData,
+      finalized
     }));
 
   if(config.debug) {
@@ -117,7 +114,7 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
   if(config.debug) {
     console.log('Updating evm events with parsed data');
   }
-  if (!await updateEvmEventsDataParsed(processedLogs.map((log) => { return { id: log.id, dataParsed: log.parseddata } }))) return false;
+  if (!await updateEvmEventsDataParsed(processedLogs.map((log) => { return { id: log.id, dataParsed: log.parsedData } }))) return false;
 
   console.log('Contract events updated successfully');
   return true;

@@ -28,6 +28,7 @@ const nodeWs = process.env[`NODE_URL_${network.toUpperCase()}`] || '';
 const explorerApi = process.env[`GRAPHQL_API_${network.toUpperCase()}`] || '';
 const reefSwapApi = process.env[`REEF_SWAP_API_${network.toUpperCase()}`] || '';
 const reefSwapFactoryAddress = process.env[`REEF_SWAP_FACTORY_ADDRESS_${network.toUpperCase()}`] || '';
+const trackFinalizedBlocks = process.env[`TRACK_FINALIZED_BLOCKS`] === 'true';
 
 console.log(`
   Network: ${network}
@@ -36,6 +37,7 @@ console.log(`
   Swap API: ${reefSwapApi}
   DB: ${process.env.DB_HOST}
   Factory: ${reefSwapFactoryAddress}
+  Track finalized blocks: ${trackFinalizedBlocks}
 `);
 
 export default {
@@ -62,5 +64,6 @@ export default {
   ipfsGatewayKey: process.env.IPFS_PROJECT_SECRET!,
   solidityScanEndpoint:process.env.SOLIDITY_SCAN_URL!,
   solidityScanToken:process.env.SOLIDITY_SCAN_TOKEN!,
-  debug: process.env.DEBUG
+  debug: process.env.DEBUG,
+  trackFinalizedBlocks: trackFinalizedBlocks,
 };

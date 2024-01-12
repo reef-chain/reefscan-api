@@ -1,26 +1,39 @@
-import { getProvider, mutate } from "../utils/connector";
+import { query, mutate } from "../utils/connector";
+import { SquidStatus } from "../utils/types";
 
 export const trackFinalizedBlocks = async () => {
     let processing = false;
+    let lastFinalizedBlock = 0;
 
-    getProvider().api.rpc.chain.subscribeFinalizedHeads(async (header) => {
+    setInterval(async () => {
         if (processing) return;
         processing = true;
-        console.log('trackFinalizedBlocks - new block:', header.number.toNumber());
 
         try {
-            await mutate(`
-                mutation {
-                    newFinalizedBlock(
-                        height: ${header.number},
-                        hash: "${header.hash.toHuman()}"
-                    )
+            const squidStatus = await query<SquidStatus>(
+                'squidStatus',
+                `query {
+                    squidStatus {
+                        height
+                    }
                 }
             `);
+            if (squidStatus && squidStatus.height > lastFinalizedBlock) {
+                console.log('trackFinalizedBlocks - finalized block:', squidStatus.height);
+                await mutate(`
+                    mutation {
+                        newFinalizedBlock(
+                            height: ${squidStatus.height}
+                        )
+                    }
+                `);
+                lastFinalizedBlock = squidStatus.height;
+            }
             processing = false;
         } catch (e) {
-            console.log('trackFinalizedBlocks - error:', e);
+            console.error('ERROR trackFinalizedBlocks:', e);
             processing = false;
         }
-    });
+    }
+    , 5000);
 };
