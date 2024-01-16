@@ -45,6 +45,7 @@ export const submitVerification = async (
 
   await verify(req.body)
     .catch(async (err) => {
+      console.log('Verify ERR=',err);
       await contractVerificationRequestInsert({
         ...req.body,
         success: false,
@@ -62,7 +63,7 @@ export const submitVerification = async (
         updateVerifiedContractData(req.body.address,{'iconUrl':'ipfs://'+hash}))
     } catch (error) {}
   }
-  
+
   res.send('Verified');
 };
 
