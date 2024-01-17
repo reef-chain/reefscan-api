@@ -104,7 +104,7 @@ string
 
 # Admin endpoints
 
-## Verify all from backup
+## Verify from backup
 Triggers verification for contracts `verified_contract` table.
 This end point is protected by admin password.
 
@@ -116,6 +116,7 @@ This end point is protected by admin password.
 | Name           |  Type  |
 | -------------- | :----: |
 | password       | string |
+| limit          | number | (optional)
 
 
 ## Backup from Squid

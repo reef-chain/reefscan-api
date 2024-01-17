@@ -87,10 +87,10 @@ export const getVerifiedContract = async (
 };
 
 export const verifyFromBackup = async (
-  _req: AppRequest<{}>,
+  req: AppRequest<{ limit?: number }>,
   res: Response,
 ) => {
-  verifyPendingFromBackup();
+  verifyPendingFromBackup(req.body.limit);
   res.send("Verification process started");
 };
 
