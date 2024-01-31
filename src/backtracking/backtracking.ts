@@ -22,6 +22,8 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
         id
         blockHeight
         blockHash
+        extrinsicId
+        extrinsicHash
         extrinsicIndex
         rawData
         timestamp
@@ -74,7 +76,17 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
 
   const evmLogs: EvmLogWithDecodedEvent[] = processedLogs
     .map(({
-      id, timestamp, blockHash, blockHeight, rawData, extrinsicIndex, signedData, parsedData, finalized
+      id,
+      timestamp,
+      blockHash,
+      blockHeight,
+      rawData,
+      extrinsicId,
+      extrinsicHash,
+      extrinsicIndex,
+      signedData,
+      parsedData,
+      finalized
     }) => ({
       id,
       name: contract.name,
@@ -84,6 +96,8 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
       address: contract.id,
       timestamp: new Date(timestamp).getTime(),
       signedData,
+      extrinsicId,
+      extrinsicHash,
       extrinsicIndex,
       contractData: contract.contractData,
       abis: contract.compiledData,

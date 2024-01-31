@@ -187,6 +187,8 @@ interface EvmEvent {
   id: string;
   blockHeight: number;
   blockHash: string;
+  extrinsicId: string;
+  extrinsicHash: string;
   extrinsicIndex: number;
   rawData: RawEventData;
   parsedData: ethers.utils.LogDescription;
@@ -207,6 +209,8 @@ interface BytecodeLogWithBlockData extends BytecodeLog {
   blockHeight: number;
   blockHash: string;
   timestamp: number;
+  extrinsicId: string;
+  extrinsicHash: string;
   extrinsicIndex: number;
   signedData: SignedExtrinsicData;
   finalized: boolean;
@@ -246,7 +250,11 @@ export interface Transfer {
   id: string;
   blockHeight: number;
   blockHash: string;
+  extrinsicId: string;
+  extrinsicHash: string;
   extrinsicIndex: number;
+
+  signedData: SignedExtrinsicData;
 
   toId: string;
   fromId: string;
@@ -257,7 +265,6 @@ export interface Transfer {
 
   type: 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';
   amount: string;
-  feeAmount: string;
 
   denom?: string;
   nftId?: string;

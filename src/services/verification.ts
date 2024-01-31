@@ -477,12 +477,12 @@ export const findAllVerifiedContractIds = async (): Promise<string[]> => {
   return allVerifiedContracts.map((contract) => contract.id);
 };
 
-// Verify in Squid all contracts from backup database (only the ones that are not already verified)
-export const verifyPendingFromBackup = async (): Promise<string> => {
+// Verify in Squid contracts from backup database (only the ones that are not already verified)
+export const verifyPendingFromBackup = async (limit?: number): Promise<string> => {
   const verifiedIds = await findAllVerifiedContractIds();
 
   const verifiedPending = await verifiedContractRepository.findAll({
-    where: { address: { [Op.notIn]: verifiedIds } }
+    where: { address: { [Op.notIn]: verifiedIds } }, limit
   });
   if(config.debug) {
     console.log(`Found ${verifiedPending.length} contracts to verify from backup`)

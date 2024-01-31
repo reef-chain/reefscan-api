@@ -44,7 +44,7 @@ yarn test
 
 ### Admin endpoints
 
-**Verify all from backup** _(DB => Squid)_: [`/verification/verify-from-backup`](api.md/#verify-all-from-backup)
+**Verify from backup** _(DB => Squid)_: [`/verification/verify-from-backup`](api.md/#verify-from-backup)
 
 **Backup from Squid** _(Squid => DB)_: [`/verification/backup-from-squid`](api.md/#create-backup-from-squid)
 
