@@ -91,6 +91,8 @@ const erc1155BatchEvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promis
 };
 
 export const processTokenTransfers = async (evmLogs: EvmLogWithDecodedEvent[]): Promise<Transfer[]> => {
+  if(config.debug) console.log('Processing transfer events');
+
   const transfers = evmLogs
     .map(async (log): Promise<Transfer[]> => {
       if (isErc20TransferEvent(log)) {
@@ -110,13 +112,22 @@ export const processTokenTransfers = async (evmLogs: EvmLogWithDecodedEvent[]): 
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<boolean> => {
   if (!transfers.length) return true;
+
   const batches = buildBatches<Transfer>(transfers, config.mutationSize);
-  const results = await Promise.all(batches.map((batch) => mutate<boolean>(
-    `mutation {
-      saveTransfers(
-        transfers: ${stringifyArray(batch)}
-      )
-    }`
-  )));
-  return results.every((result) => !!result);
+  if(config.debug) console.log(`Inserting ${transfers.length} transfers in ${batches.length} batches`);
+
+  for (const [index, batch] of batches.entries()) {
+    const result = await mutate<boolean>(
+      `mutation {
+        saveTransfers(
+          transfers: ${stringifyArray(batch)}
+        )
+      }`
+    );
+    if(config.debug) {
+      result ? console.log(`Batch ${index + 1} updated`) : console.log(`Batch ${index + 1} failed`);
+    }
+    if (!result) return false;
+  }
+  return true;
 };

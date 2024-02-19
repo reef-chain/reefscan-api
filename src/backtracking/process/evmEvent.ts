@@ -13,13 +13,22 @@ export const isErc1155TransferBatchEvent = ({ decodedEvent, type }: EvmLogWithDe
 
 export const updateEvmEventsDataParsed = async (evmEvents: EvmEventDataParsed[]): Promise<boolean> => {
     if (!evmEvents.length) return true;
+
     const batches = buildBatches<EvmEventDataParsed>(evmEvents, config.mutationSize);
-    const results = await Promise.all(batches.map((batch) => mutate<boolean>(
-      `mutation {
-        updateEvmEventsDataParsed(
-          evmEvents: ${stringifyArray(batch)}
-        )
-      }`
-    )));
-    return results.every((result) => !!result);
+    if(config.debug) console.log(`Updating ${evmEvents.length} evm events in ${batches.length} batches`);
+
+    for (const [index, batch] of batches.entries()) {
+      const result = await mutate<boolean>(
+        `mutation {
+          updateEvmEventsDataParsed(
+            evmEvents: ${stringifyArray(batch)}
+          )
+        }`
+      );
+      if(config.debug) {
+        result ? console.log(`Batch ${index + 1} updated`) : console.log(`Batch ${index + 1} failed`);
+      }
+      if (!result) return false;
+    }
+    return true;
 };
