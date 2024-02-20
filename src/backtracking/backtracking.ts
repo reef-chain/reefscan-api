@@ -108,29 +108,13 @@ const backtrackContractEvents = async (contractAddress: string): Promise<boolean
       finalized
     }));
 
-  if(config.debug) {
-    console.log('Processing transfer events');
-  }
   const transfers = await processTokenTransfers(evmLogs);
-  if(config.debug) {
-    console.log('Processing token-holder events');
-  }
   const tokenHolders = await processEvmTokenHolders(evmLogs);
-
-  if(config.debug) {
-    console.log('Inserting Transfers');
-  }
   if (!await insertTransfers(transfers)) return false;
-  if(config.debug) {
-    console.log('Inserting Token holders');
-  }
   if (!await insertTokenHolders(tokenHolders)) return false;
-  if(config.debug) {
-    console.log('Updating evm events with parsed data');
-  }
   if (!await updateEvmEventsDataParsed(processedLogs.map((log) => { return { id: log.id, dataParsed: log.parsedData } }))) return false;
-
-  console.log('Contract events updated successfully');
+  
+  console.log('Data from contract events updated successfully');
   return true;
 };
 

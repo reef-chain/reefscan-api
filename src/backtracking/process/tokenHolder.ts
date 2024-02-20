@@ -56,6 +56,8 @@ const evmLogToTokenHolderHead = (log: EvmLogWithDecodedEvent): TokenHolderHead[]
 };
 
 export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]): Promise<TokenHolder[]> => {
+  if(config.debug) console.log('Processing token-holder events');
+
   const tokenHolders = dropDuplicatesMultiKey(
     evmLogs.flatMap(evmLogToTokenHolderHead),
     ['evmAddress', 'tokenId', 'nftId'],
@@ -81,13 +83,22 @@ export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]):
 
 export const insertTokenHolders = async (tokenHolders: TokenHolder[]): Promise<boolean> => {
   if (!tokenHolders.length) return true;
+
   const batches = buildBatches(tokenHolders, config.mutationSize);
-  const results = await Promise.all(batches.map((batch) => mutate<boolean>(
-    `mutation {
-      saveTokenHolders(
-        tokenHolders: ${stringifyArray(batch)}
-      )
-    }`
-  )));
-  return results.every((result) => !!result);
+  if(config.debug) console.log(`Inserting ${tokenHolders.length} token holders in ${batches.length} batches`);
+
+  for (const [index, batch] of batches.entries()) {
+    const result = await mutate<boolean>(
+      `mutation {
+        saveTokenHolders(
+          tokenHolders: ${stringifyArray(batch)}
+        )
+      }`
+    );
+    if(config.debug) {
+      result ? console.log(`Batch ${index + 1} updated`) : console.log(`Batch ${index + 1} failed`);
+    }
+    if (!result) return false;
+  }
+  return true;
 };
