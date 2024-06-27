@@ -15,6 +15,7 @@ export const getReefPrice = async (_, res: Response, next: NextFunction) => {
             currentPrice = {timestamp: (new Date()).getTime(), price};
         } catch (err) {
             next(err);
+            return;
         }
     }
     res.send({...currentPrice.price, timestamp: currentPrice.timestamp});
