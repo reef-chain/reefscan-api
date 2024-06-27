@@ -15,7 +15,7 @@ export const getReefPrice = async (_, res: Response, next: NextFunction) => {
             currentPrice = {timestamp: (new Date()).getTime(), price};
         } catch (err) {
             // TODO remove
-            currentPrice = {timestamp: (new Date()).getTime(), price:{usd:'0.00145339', usd_24h_change:'2.834696428592735', live:false}};
+            currentPrice = {timestamp: (new Date()).getTime(), price:{usd:0.00145339, usd_24h_change:2.834696428592735, _live:false}};
             console.log("REMOVE WHEN coingecko API ENABLED")
             //next(err);
             // return;
