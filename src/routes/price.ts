@@ -3,7 +3,7 @@ import {NextFunction, Response} from 'express';
 import config from "../utils/config";
 
 
-const CACHE_PRICE_MS = 30000;
+const CACHE_PRICE_MS = 60000;
 let currentPrice:{timestamp: number, price?: Price}={timestamp:0}
 
 export const getReefPrice = async (_, res: Response, next: NextFunction) => {
@@ -14,8 +14,11 @@ export const getReefPrice = async (_, res: Response, next: NextFunction) => {
             const price = await fetchReefPrice();
             currentPrice = {timestamp: (new Date()).getTime(), price};
         } catch (err) {
-            next(err);
-            return;
+            // TODO remove
+            currentPrice = {timestamp: (new Date()).getTime(), {usd:'0.00145339', usd_24h_change:'2.834696428592735', live:false}};
+            console.log("REMOVE WHEN coingecko API ENABLED")
+            //next(err);
+            // return;
         }
     }
     res.send({...currentPrice.price, timestamp: currentPrice.timestamp});
