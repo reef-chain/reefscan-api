@@ -6,6 +6,7 @@ const REEF_DENOM = 'reef';
 export interface Price {
   usd: number;
   usd_24h_change: number;
+  failed?: boolean;
 }
 
 interface PriceWrapper {
