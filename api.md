@@ -87,6 +87,18 @@ string
 | timestamp        | Date |
 
 
+## Get verified contract
+
+**URL** : `/verification/verified-contracts-count`
+
+**Method** : `GET`
+
+**Return data**
+| Name         |  Type  |
+| ------------ | :----: |
+| count        | number |
+
+
 ## Get REEF price
 
 **URL** : `/price/reef`
@@ -113,10 +125,11 @@ This end point is protected by admin password.
 **Method** : `POST`
 
 **Request body**
-| Name           |  Type  |
-| -------------- | :----: |
-| password       | string |
-| limit          | number | (optional)
+| Name           |  Type  |            |
+| -------------- | :----: | ---------- |
+| password       | string |            | 
+| limit          | number | (optional) |
+| squidVersion   | number | (optional) |
 
 
 ## Backup from Squid
@@ -128,9 +141,10 @@ This end point is protected by admin password.
 **Method** : `POST`
 
 **Request body**
-| Name           |  Type  |
-| -------------- | :----: |
-| password       | string |
+| Name           |  Type  |            |
+| -------------- | :----: | ---------- |
+| password       | string |            |
+| squidVersion   | number | (optional) |
 
 
 ## Export backup
@@ -170,8 +184,9 @@ This end point is protected by admin password.
 **Method** : `POST`
 
 **Request body**
-| Name           |  Type  |
-| -------------- | :----: |
-| address        | string |
-| approved       | boolean |
-| password       | string |
+| Name           |  Type   |            |
+| -------------- | :-----: | ---------- |
+| address        | string  |            |
+| approved       | boolean |            |
+| password       | string  |            |
+| squidVersion   | number  | (optional) |

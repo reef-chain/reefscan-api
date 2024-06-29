@@ -37,7 +37,9 @@ interface ContractVerificationInsert {
   success: boolean;
   errorMessage?: string;
   license?: License;
+  squidVersion?: number;
 }
+
 interface VerifiedContract {
   id: string;
   name: string;
@@ -70,6 +72,7 @@ interface UpdateContract {
   data: string;
   timestamp: number;
   approved?: boolean;
+  squidVersion?: number;
 }
 
 const fileStorageService: FileStorageService = config.localBackup
@@ -89,26 +92,28 @@ const checkLicense = (verification: AutomaticContractVerificationReq) => {
   }
 };
 
-const findContractBytecode = async (id: string): Promise<string> => {
+const findContractBytecode = async (id: string, squidVersion?: number): Promise<string> => {
   const contract = await query<Bytecode>(
     'contractById',
     `query {
       contractById(id: "${id}") {
         bytecode
       }
-    }`
+    }`,
+    squidVersion
   );
   return contract && contract.bytecode ? contract.bytecode : '';
 };
 
-const getBlockHeight = async (): Promise<number> => {
+const getBlockHeight = async (squidVersion?: number): Promise<number> => {
   const lastBlock = await query<Bytecode>(
     'blocks',
     `query {
       blocks(limit:1, orderBy: height_DESC) {
         height
       }
-    }`
+    }`,
+    squidVersion
   );
   return lastBlock && lastBlock[0] && lastBlock[0].height ? lastBlock[0].height : 0;
 };
@@ -128,7 +133,8 @@ const insertVerifiedContract = async ({
   data,
   license,
   timestamp,
-  approved = false
+  approved = false,
+  squidVersion
 }: UpdateContract): Promise<boolean> => {
   const result = await mutate<{saveVerifiedContract: boolean}>(`
     mutation {
@@ -150,7 +156,7 @@ const insertVerifiedContract = async ({
         approved: ${approved}
       )
     }
-  `);
+  `, null, squidVersion);
   return result?.saveVerifiedContract || false;
 };
 
@@ -166,7 +172,8 @@ export const contractVerificationRequestInsert = async ({
   target,
   success,
   errorMessage,
-  license
+  license,
+  squidVersion
 }: ContractVerificationInsert): Promise<void> => {
   await mutate(`
     mutation {
@@ -186,13 +193,14 @@ export const contractVerificationRequestInsert = async ({
         timestamp: ${Date.now()}
       )
     }
-  `);
+  `, null, squidVersion);
 };
 
 export const contractInsert = async (
   address: string,
   bytecode: string,
-  signerAddress: string
+  signerAddress: string,
+  squidVersion?: number
 ): Promise<void> => {
   await mutate(`
     mutation {
@@ -208,16 +216,17 @@ export const contractInsert = async (
         timestamp: ${Date.now()}
       )
     }
-  `);
+  `, null, squidVersion);
 };
 
 export const verify = async (
   verification: AutomaticContractVerificationReq,
   backup = true,
   contractData = null,
-  approved = false
+  approved = false,
+  squidVersion?: number
 ): Promise<void> => {
-  const existing = await findVerifiedContract(verification.address);
+  const existing = await findVerifiedContract(verification.address, squidVersion);
   ensure(!existing, 'Contract already verified', 400);
 
   if (!verification.license || verification.license == 'none') {
@@ -242,7 +251,7 @@ export const verify = async (
     }
   }
 
-  let deployedBytecode = await findContractBytecode(verification.address);
+  let deployedBytecode = await findContractBytecode(verification.address, squidVersion);
   if (deployedBytecode === '' && verification.blockHeight) {
     // Try to find contract on chain, and insert it in explorer if exists
     const account = await getProvider().api.query.evm.accounts(verification.address);
@@ -273,6 +282,7 @@ export const verify = async (
     id: verification.address,
     args,
     optimization: verification.optimization === 'true',
+    squidVersion,
   });
   // Resolving contract additional information
   const { type, data } = await resolveContractData(verification.address, abi);
@@ -286,7 +296,8 @@ export const verify = async (
     abi: fullAbi,
     data: JSON.stringify(data),
     optimization: verification.optimization === 'true',
-    approved
+    approved,
+    squidVersion
   });
 
   if (verified && backup) {
@@ -353,7 +364,8 @@ export const updateVerifiedContractData = async (
 
 export const updateVerifiedContractApproved = async (
   id: string,
-  approved: boolean
+  approved: boolean,
+  squidVersion?: number
 ): Promise<boolean> => {
   // Updating verified contract approved
   const response = await mutate<any>(`
@@ -363,11 +375,11 @@ export const updateVerifiedContractApproved = async (
         approved: ${approved}
       )
     }
-  `);
+  `, null, squidVersion);
   const success = response?.updateVerifiedContractApproved || false;
 
-  if (success)  {
-    // Updating contract into API database as backup
+  if (success && !squidVersion)  {
+    // Updating contract into API database as backup (only for prod squid version)
     try {
       const verifiedBackup = await verifiedContractRepository.findByPk(id);
       if (verifiedBackup) {
@@ -431,31 +443,33 @@ export const contractVerificationStatus = async (
 
 export const findVerifiedContract = async (
   id: string,
+  squidVersion?: number
 ): Promise<VerifiedContract | null> => {
   return await query<VerifiedContract | null>(
       'verifiedContractById',
       `query {
-      verifiedContractById(id: "${id}") {
-        id
-        name
-        filename
-        source
-        runs
-        optimization
-        compilerVersion
-        compiledData
-        args
-        target
-        type
-        contractData
-        timestamp
-        approved
-      }
-    }`
+        verifiedContractById(id: "${id}") {
+          id
+          name
+          filename
+          source
+          runs
+          optimization
+          compilerVersion
+          compiledData
+          args
+          target
+          type
+          contractData
+          timestamp
+          approved
+        }
+      }`,
+      squidVersion
   );
 };
 
-export const findAllVerifiedContractIds = async (): Promise<string[]> => {
+export const findAllVerifiedContractIds = async (squidVersion?: number): Promise<string[]> => {
   const QUERY_LIMIT = 500;
   const allVerifiedContracts: ContractVerifiedID[] = [];
   let moreAvailable = true;
@@ -466,7 +480,8 @@ export const findAllVerifiedContractIds = async (): Promise<string[]> => {
       'verifiedContracts',
       `query {
         verifiedContracts(limit: ${QUERY_LIMIT}, offset: ${currIndex}) { id }
-      }`
+      }`,
+      squidVersion
     );
     if (!verifiedContracts || !verifiedContracts.length || verifiedContracts.length < QUERY_LIMIT) {
       moreAvailable = false;
@@ -477,9 +492,13 @@ export const findAllVerifiedContractIds = async (): Promise<string[]> => {
   return allVerifiedContracts.map((contract) => contract.id);
 };
 
+export const verifiedContractsCount = async (): Promise<number> => {
+  return await verifiedContractRepository.count();
+};
+
 // Verify in Squid contracts from backup database (only the ones that are not already verified)
-export const verifyPendingFromBackup = async (limit?: number): Promise<string> => {
-  const verifiedIds = await findAllVerifiedContractIds();
+export const verifyPendingFromBackup = async (limit?: number, squidVersion?: number): Promise<string> => {
+  const verifiedIds = await findAllVerifiedContractIds(squidVersion);
 
   const verifiedPending = await verifiedContractRepository.findAll({
     where: { address: { [Op.notIn]: verifiedIds } }, limit
@@ -507,7 +526,8 @@ export const verifyPendingFromBackup = async (limit?: number): Promise<string> =
         compilerVersion: verifiedContract.compilerVersion,
         timestamp: verifiedContract.timestamp,
         blockHeight: 1,
-      }, false, verifiedContract.contractData, verifiedContract.approved || false);
+      }, 
+      false, verifiedContract.contractData, verifiedContract.approved || false, squidVersion);
     } catch (err: any) {
       console.error(err);
     }
@@ -518,7 +538,7 @@ export const verifyPendingFromBackup = async (limit?: number): Promise<string> =
 }
 
 // Gets verified contracts from Squid and inserts them into backup database
-export const createBackupFromSquid = async (): Promise<void> => {
+export const createBackupFromSquid = async (squidVersion?: number): Promise<void> => {
   await verifiedContractRepository.destroy({
     where: {},
     truncate: true
@@ -547,7 +567,8 @@ export const createBackupFromSquid = async (): Promise<void> => {
           timestamp
           approved
         }
-      }`
+      }`,
+      squidVersion
     )
     if (!verifiedContracts || !verifiedContracts.length) {
       moreAvailable = false;

@@ -7,6 +7,7 @@ import {
   findVerifiedContract, importBackupFromFiles,
   updateVerifiedContractApproved,
   updateVerifiedContractData,
+  verifiedContractsCount,
   verify,
   verifyPendingFromBackup,
 } from '../services/verification';
@@ -24,14 +25,22 @@ interface ContractVerificationID {
   id: string;
 }
 
-interface VerifiedContractApproved {
+interface SquidVersion {
+  squidVersion?: number;
+}
+
+interface VerifyFromBackup extends SquidVersion {
+  limit?: number;
+}
+
+interface VerifiedContractApproved extends SquidVersion {
   address: string;
   approved: boolean;
 }
 
-  interface ExtendedContractVerificationReq extends AutomaticContractVerificationReq {
-    file: string;
-  }
+interface ExtendedContractVerificationReq extends AutomaticContractVerificationReq {
+  file: string;
+}
 
 export const submitVerification = async (
   req: AppRequest<ExtendedContractVerificationReq>,
@@ -87,19 +96,27 @@ export const getVerifiedContract = async (
   res.send(contract);
 };
 
-export const verifyFromBackup = async (
-  req: AppRequest<{ limit?: number }>,
+export const getVerifiedContractsCount = async (
+  _req: AppRequest<{}>,
   res: Response,
 ) => {
-  verifyPendingFromBackup(req.body.limit);
+  const count = verifiedContractsCount();
+  res.send({ count });
+};
+
+export const verifyFromBackup = async (
+  req: AppRequest<VerifyFromBackup>,
+  res: Response,
+) => {
+  verifyPendingFromBackup(req.body.limit, req.body.squidVersion);
   res.send("Verification process started");
 };
 
 export const backupFromSquid = async (
-  _req: AppRequest<{}>,
+  req: AppRequest<SquidVersion>,
   res: Response,
 ) => {
-  createBackupFromSquid();
+  createBackupFromSquid(req.body.squidVersion);
   res.send("Backup from Squid process started");
 };
 
@@ -123,6 +140,10 @@ export const setContractApproved = async (
   req: AppRequest<VerifiedContractApproved>,
   res: Response,
 ) => {
-  const success = await updateVerifiedContractApproved(req.body.address, req.body.approved);
+  const success = await updateVerifiedContractApproved(
+    req.body.address,
+    req.body.approved,
+    req.body.squidVersion
+  );
   res.send({ success });
 }
