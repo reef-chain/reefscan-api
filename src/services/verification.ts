@@ -285,7 +285,8 @@ export const verify = async (
     squidVersion,
   });
   // Resolving contract additional information
-  const { type, data } = await resolveContractData(verification.address, abi);
+  let { type, data } = await resolveContractData(verification.address, abi);
+  data = contractData || data;
 
   // Inserting contract into verified contract table
   const verified = await insertVerifiedContract({
@@ -315,7 +316,7 @@ export const verify = async (
         target: verification.target,
         license: verification.license.toString(),
         timestamp: verification.timestamp,
-        contractData: contractData || data,
+        contractData: data,
         approved
       });
     } catch (err: any) {
