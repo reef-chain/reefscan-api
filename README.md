@@ -39,6 +39,8 @@ yarn test
 
 **Get verified contract** : [`/verification/contract/:address`](api.md/#get-verified-contract)
 
+**Get verified contracts count** : [`/verification/verified-contracts-count`](api.md/#get-verified-contracts-count)
+
 **Get REEF price**: [`/price/reef`](api.md/#get-reef-price)
 
 

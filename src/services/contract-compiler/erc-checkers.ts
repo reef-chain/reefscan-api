@@ -30,7 +30,7 @@ const checkIfContractIsERC1155 = (abi: ABI): boolean => contractChecked(abi, Erc
 const extractERC20ContractData = async (address: string, abi: ABI): Promise<ERC20Data> => {
   const contract = new Contract(address, abi, getProvider());
   const iconUriContract = new Contract(address, ["function iconUri() view returns (string)"], getProvider());
-  const [name, symbol, decimals, tokenUrl] = await Promise.all([
+  const [name, symbol, decimals, iconUrl] = await Promise.all([
     contract.name(),
     contract.symbol(),
     contract.decimals(),
@@ -62,14 +62,14 @@ const extractERC20ContractData = async (address: string, abi: ABI): Promise<ERC2
         name: `${name0}-${name1} LP`,
         symbol: `${symbol0}/${symbol1}-LP`,
         decimals,
-        tokenUrl,
+        iconUrl,
         token0,
         token1 
       };
     }
   } 
 
-  return { name, symbol, decimals, tokenUrl };
+  return { name, symbol, decimals, iconUrl };
 };
 
 const extractERC721ContractData = async (address: string, abi: ABI): Promise<ERC721Data> => {
