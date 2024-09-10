@@ -64,6 +64,8 @@ export default {
   ipfsGatewayKey: process.env.IPFS_PROJECT_SECRET!,
   solidityScanEndpoint:process.env.SOLIDITY_SCAN_URL!,
   solidityScanToken:process.env.SOLIDITY_SCAN_TOKEN!,
+  stealthexEndpoint:process.env.STEALTHEX_URL!,
+  stealthexApiKey:process.env.STEALTHEX_API_TOKEN!,
   debug: process.env.DEBUG,
   trackFinalizedBlocks: trackFinalizedBlocks,
 };
