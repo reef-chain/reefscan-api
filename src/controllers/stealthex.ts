@@ -166,7 +166,7 @@ export const createExchange = async(
     const fromNetwork = req.body['fromNetwork'];
     const toSymbol = req.body['toSymbol'];
     const toNetwork = req.body['toNetwork'];
-    const amount = parseFloat(req.body['number']);
+    const amount = parseFloat(req.body['amount']);
     const address = req.body['address'];
 
     const options = {
