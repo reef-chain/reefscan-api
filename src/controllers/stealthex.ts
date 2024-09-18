@@ -131,7 +131,8 @@ export const getEstimatedExchange = async(
           }));
           apiResponse.json({data:data.estimated_amount});
     } catch (error) {
-        return apiResponse.json({data:0});
+      console.log("getEstimatedExchange===",error)
+      apiResponse.json({data:0});
     }
 }
 
@@ -154,7 +155,7 @@ export const setTransactionHash = async(
       apiResponse.json({data,error:undefined});
     } catch (error) {
       console.log("setTransactionHash error===",error);
-      apiResponse.json({error:error,data:undefined})
+      apiResponse.json({data:undefined,error:"encountered some error"});
     }
 }
 
@@ -189,7 +190,8 @@ export const createExchange = async(
       const { data } = await axios.request(options as AxiosRequestConfig);
       apiResponse.json({data,error:undefined});
     } catch (error) {
-        apiResponse.json({data:undefined,error});
+      console.log("createExchange===",error)
+      apiResponse.json({data:undefined,error:"encountered some error"});
     }
     }
     
