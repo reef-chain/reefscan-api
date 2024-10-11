@@ -23,7 +23,8 @@ const reefMainnet = {
 
 const erc20Abi = ["function totalSupply() view returns (uint256)"];
 
-const CACHE_SUPPLY_MS = 60000;
+// updates every hour
+const CACHE_SUPPLY_MS = 60000*60;
 const CACHED_SUPPLY_ERROR_AFTER_MS = 600000;
 const MAX_RETRIES = 3;
 
