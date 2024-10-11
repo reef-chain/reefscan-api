@@ -1,6 +1,5 @@
 import {fetchReefPrice, Price} from "../services/utils";
 import {NextFunction, Response} from 'express';
-import config from "../utils/config";
 
 
 const CACHE_PRICE_MS = 60000;

@@ -3,6 +3,14 @@ import config from "../utils/config";
 
 const REEF_DENOM = 'reef';
 
+export interface Supply {
+  eth: number;
+  bsc: number;
+  reef: number;
+  total: number;
+  failed?: boolean;
+}
+
 export interface Price {
   usd: number;
   usd_24h_change: number;
