@@ -4,16 +4,16 @@ import { ethers } from 'ethers';
 import { getProvider } from "../utils/connector";
 import config from "../utils/config";
 
-const { infuraProjectId } = config;
+const { infuraApiKey } = config;
 
 const reefEth = {
     contractAddress: '0xFE3E6a25e6b192A42a44ecDDCd13796471735ACf',
-    rpc: `https://mainnet.infura.io/v3/${infuraProjectId}`
+    rpc: `https://mainnet.infura.io/v3/${infuraApiKey}`
 };
 
 const reefBsc = {
     contractAddress: '0xF21768cCBC73Ea5B6fd3C687208a7c2def2d966e',
-    rpc: `https://bsc-mainnet.infura.io/v3/${infuraProjectId}`
+    rpc: `https://bsc-mainnet.infura.io/v3/${infuraApiKey}`
 };
 
 const reefMainnet = {
