@@ -20,6 +20,7 @@ import { getReefPrice } from "./routes/price";
 import { getVersion } from "./routes/version";
 import { Umzug, SequelizeStorage } from "umzug";
 import { trackFinalizedBlocks } from './services/finalized-blocks';
+import { getReefSupply } from './routes/supply';
 
 /* eslint "no-underscore-dangle": "off" */
 /*Sentry.init({
@@ -105,6 +106,7 @@ app.use('/magicsquare',magicSquareRouter)
 // });
 
 app.get('/price/reef', getReefPrice);
+app.get('/supply/reef', getReefSupply);
 app.get('/hc', getVersion);
 
 // The error handler must be before any other error middleware and after all controllers
