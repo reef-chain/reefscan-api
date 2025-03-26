@@ -9,6 +9,7 @@ import verificationRouter from './routes/verification';
 import updateTokenIconRouter from './routes/updateTokenIcon';
 import solidityScanRouter from './routes/solidityScanScore';
 import stealthexRouter from './routes/stealthex';
+import totalSupplyRouter from './routes/totalSupply';
 import magicSquareRouter from './routes/magicSquare';
 import bodyParser from 'body-parser';
 import { StatusError } from './utils/utils';
@@ -92,6 +93,7 @@ app.use('/api/verificator', verificationRouter);
 app.use('/api/updateTokenIcon',updateTokenIconRouter);
 app.use('/solidityScan/score',solidityScanRouter);
 app.use('/stealthex',stealthexRouter);
+app.use('/total-supply',totalSupplyRouter);
 
 // TODO @anukulpandey: remove after campaign is over
 app.use('/magicsquare',magicSquareRouter)

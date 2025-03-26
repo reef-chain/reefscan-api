@@ -16,7 +16,7 @@ const reefBsc = {
     rpc: `https://bsc-mainnet.infura.io/v3/${infuraApiKey}`
 };
 
-const reefMainnet = {
+export const reefMainnet = {
     contractAddress: '0x0000000000000000000000000000000001000000',
     rpc: 'wss://rpc.reefscan.info/ws'
 };
@@ -62,11 +62,12 @@ const getTotalSupply = async ({ contractAddress, rpc }: TokenSupply) => {
         const totalSupply = await contract.totalSupply();
         return parseFloat(ethers.utils.formatEther(totalSupply));
     } catch (error) {
+        console.log("error===",error);
         return 0;
     }
 };
 
-const getReefMainnetSupply = async ({ contractAddress, rpc }: TokenSupply) => {
+export const getReefMainnetSupply = async ({ contractAddress, rpc }: TokenSupply) => {
     try {
         const evmProvider = getProvider();
         const contract = new ethers.Contract(contractAddress, erc20Abi, evmProvider);
