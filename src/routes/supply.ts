@@ -8,20 +8,26 @@ const { infuraApiKey } = config;
 
 const reefEth = {
     contractAddress: '0xFE3E6a25e6b192A42a44ecDDCd13796471735ACf',
-    rpc: `https://mainnet.infura.io/v3/${infuraApiKey}`
+    rpc: `https://mainnet.infura.io/v3/${infuraApiKey}`,
+    deadAddress:'0x000000000000000000000000000000000000dead'
 };
 
 const reefBsc = {
     contractAddress: '0xF21768cCBC73Ea5B6fd3C687208a7c2def2d966e',
-    rpc: `https://bsc-mainnet.infura.io/v3/${infuraApiKey}`
+    rpc: `https://bsc-mainnet.infura.io/v3/${infuraApiKey}`,
+    deadAddress:'0x000000000000000000000000000000000000dead'
 };
 
 export const reefMainnet = {
     contractAddress: '0x0000000000000000000000000000000001000000',
-    rpc: 'wss://rpc.reefscan.info/ws'
+    rpc: 'wss://rpc.reefscan.info/ws',
+    deadAddress:'0x0000000000000000000000000000000000000000'
 };
 
-const erc20Abi = ["function totalSupply() view returns (uint256)"];
+const erc20Abi = [
+    "function totalSupply() view returns (uint256)",
+    "function balanceOf(address) view returns (uint256)"
+];  
 
 // updates every hour
 const CACHE_SUPPLY_MS = 60000*60;
@@ -32,7 +38,8 @@ let currentSupply: { timestamp: number, supply?: Supply } = { timestamp: 0 };
 
 interface TokenSupply {
     contractAddress: string,
-    rpc: string
+    rpc: string,
+    deadAddress: string,
 }
 
 const getTotalSupplyWithRetry = async (
@@ -55,12 +62,13 @@ const getTotalSupplyWithRetry = async (
     }
 };
 
-const getTotalSupply = async ({ contractAddress, rpc }: TokenSupply) => {
+const getTotalSupply = async ({ contractAddress, rpc,deadAddress }: TokenSupply) => {
     try {
         const provider = new ethers.providers.JsonRpcProvider(rpc);
         const contract = new ethers.Contract(contractAddress, erc20Abi, provider);
         const totalSupply = await contract.totalSupply();
-        return parseFloat(ethers.utils.formatEther(totalSupply));
+        const deadAddressBalance = await contract.balanceOf(deadAddress);
+        return parseFloat(ethers.utils.formatEther(totalSupply.sub(deadAddressBalance)));
     } catch (error) {
         console.log("error===",error);
         return 0;
