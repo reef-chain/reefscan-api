@@ -1,11 +1,11 @@
 import { Response } from 'express';
 import { AppRequest } from '../utils/types';
-import { getReefMainnetSupply, reefMainnet } from '../routes/supply';
+import { fetchReefSupply} from '../routes/supply';
 
 export const totalReefSupply = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-  const response = await getReefMainnetSupply(reefMainnet);
+  const response = (await fetchReefSupply()).total;
   res.json(response);
 };
