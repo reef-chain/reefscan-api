@@ -87,7 +87,7 @@ export const getReefMainnetSupply = async ({ contractAddress, rpc }: TokenSupply
     }
 };
 
-const fetchReefSupply = async () => {
+export const fetchReefSupply = async () => {
     try {
         const [eth, bsc, reef] = await Promise.all([
             getTotalSupplyWithRetry(reefEth, getTotalSupply),
