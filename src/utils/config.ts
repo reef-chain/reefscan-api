@@ -69,4 +69,7 @@ export default {
   stealthexApiKey:process.env.STEALTHEX_API_TOKEN!,
   debug: process.env.DEBUG,
   trackFinalizedBlocks: trackFinalizedBlocks,
+  alchemyPayAppId:process.env.ALCHEMY_PAY_ID,
+  alchemyPaySecret:process.env.ALCHEMY_PAY_SECRET,
+  alchemyPayBaseUrl:process.env.ALCHEMY_PAY_BASE_URL,
 };
