@@ -6,6 +6,6 @@ export const totalReefSupply = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-  const response = (await fetchReefSupply()).total;
+  const response = (await fetchReefSupply()).reef;
   res.json(response);
 };
