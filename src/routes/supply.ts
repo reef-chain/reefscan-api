@@ -132,5 +132,5 @@ export const getReefSupply = async (_, res: Response, next: NextFunction) => {
     */
     // res.send({ ...currentSupply.supply, timestamp: currentSupply.timestamp }); 
 
-    res.send({ result:currentSupply.supply?.total });
+    res.send({ result:currentSupply.supply?.reef });
 };
