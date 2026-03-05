@@ -120,5 +120,17 @@ export const getReefSupply = async (_, res: Response, next: NextFunction) => {
         }
     }
 
-    res.send({ ...currentSupply.supply, timestamp: currentSupply.timestamp });
+    // OLD CODE , returning result like this
+    /*
+        {
+            "eth": 5533453218.35993,
+            "bsc": 4325757067.708872,
+            "reef": 35420358177.67119,
+            "total": 45279568463.73999,
+            "timestamp": 1772698148163
+        }
+    */
+    // res.send({ ...currentSupply.supply, timestamp: currentSupply.timestamp }); 
+
+    res.send({ result:currentSupply.supply?.total });
 };
