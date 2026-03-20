@@ -136,6 +136,21 @@ const toPositiveInteger = (value: unknown, fieldName: string): number => {
   throw new StatusError(`${fieldName} must be a positive integer`, 400);
 };
 
+const toNonNegativeInteger = (value: unknown, fieldName: string): number => {
+  if (typeof value === 'number') {
+    ensure(Number.isInteger(value) && value >= 0, `${fieldName} must be a non-negative integer`, 400);
+    return value;
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    ensure(Number.isInteger(parsed) && parsed >= 0, `${fieldName} must be a non-negative integer`, 400);
+    return parsed;
+  }
+
+  throw new StatusError(`${fieldName} must be a non-negative integer`, 400);
+};
+
 const normalizeCode = (value: string) => value.trim().toUpperCase();
 
 const buildPartnerUserIp = (req: Request, explicitValue?: unknown): string | undefined => {
@@ -395,7 +410,9 @@ export const listCurrencies = async (
   try {
     const search = toOptionalString(req.query.search);
     const limitValue = req.query.limit;
+    const offsetValue = req.query.offset;
     const limit = limitValue ? Math.min(toPositiveInteger(limitValue, 'limit'), 500) : undefined;
+    const offset = offsetValue ? toNonNegativeInteger(offsetValue, 'offset') : 0;
     const partnerUserIp = buildPartnerUserIp(req, req.query.partnerUserIp);
 
     const params = partnerUserIp ? { partner_user_ip: partnerUserIp } : undefined;
@@ -416,8 +433,10 @@ export const listCurrencies = async (
       });
     }
 
-    if (limit) {
-      currencies = currencies.slice(0, limit);
+    if (offset || limit) {
+      currencies = limit
+        ? currencies.slice(offset, offset + limit)
+        : currencies.slice(offset);
     }
 
     apiResponse.json({
