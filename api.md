@@ -114,6 +114,130 @@ string
 | timestamp      | timestamp |
 
 
+## Get LetsExchange source currencies
+
+Returns active LetsExchange source currencies and networks that can be used as starting points for swaps into REEF. The quote endpoints remain the source of truth for pair availability at request time.
+
+**URL** : `/letsexchange/listcurrencies`
+
+**Method** : `GET`
+
+**Query params**
+
+| Name          |   Type   |            |
+| ------------- | :------: | ---------- |
+| search        |  string  | (optional) |
+| limit         |  number  | (optional) |
+| partnerUserIp |  string  | (optional) |
+
+**Return data** :
+
+An array of currency-network entries with fields such as `symbol`, `name`, `network`, `networkName`, `icon`, `hasExtra`, `extraName`, `explorer`, `contractAddress`, `validationAddressRegex`, `validationAddressExtraRegex`, `defaultNetwork`, and `defaultNetworkName`.
+
+
+## Get LetsExchange REEF quote
+
+Gets a quote for swapping a source currency into REEF using a deposit amount.
+
+**URL** : `/letsexchange/quote`
+
+**Method** : `POST`
+
+**Request body**
+
+| Name          |   Type   |            |
+| ------------- | :------: | ---------- |
+| fromSymbol    |  string  |            |
+| fromNetwork   |  string  |            |
+| amount        |  number  |            |
+| isFloat       | boolean  | (optional) |
+| promocode     |  string  | (optional) |
+| partnerUserIp |  string  | (optional) |
+
+**Return data** :
+
+LetsExchange quote payload for a REEF destination, including fields such as `amount`, `rate`, `min_amount`, `max_amount`, `withdrawal_fee`, `rate_id`, and `rate_id_expired_at`.
+
+
+## Get LetsExchange REEF quote by target amount
+
+Gets a quote for swapping a source currency into REEF using the desired REEF amount.
+
+**URL** : `/letsexchange/quote-revert`
+
+**Method** : `POST`
+
+**Request body**
+
+| Name            |   Type   |            |
+| --------------- | :------: | ---------- |
+| fromSymbol      |  string  |            |
+| fromNetwork     |  string  |            |
+| withdrawalAmount|  number  |            |
+| isFloat         | boolean  | (optional) |
+| promocode       |  string  | (optional) |
+| partnerUserIp   |  string  | (optional) |
+
+**Return data** :
+
+LetsExchange reverse-quote payload for a REEF destination, including the required source amount, rate information, and limits.
+
+
+## Create LetsExchange REEF swap
+
+Creates a LetsExchange transaction that sends REEF to the provided withdrawal address. Provide exactly one of `depositAmount` or `withdrawalAmount`.
+
+**URL** : `/letsexchange/create-exchange`
+
+**Method** : `POST`
+
+**Request body**
+
+| Name             |   Type   |            |
+| ---------------- | :------: | ---------- |
+| fromSymbol       |  string  |            |
+| fromNetwork      |  string  |            |
+| withdrawalAddress|  string  |            |
+| depositAmount    |  number  | (optional) |
+| withdrawalAmount |  number  | (optional) |
+| isFloat          | boolean  | (optional) |
+| withdrawalExtraId|  string  | (optional) |
+| refundAddress    |  string  | (optional) |
+| refundExtraId    |  string  | (optional) |
+| rateId           |  string  | (optional) |
+| promocode        |  string  | (optional) |
+| email            |  string  | (optional) |
+| partnerUserIp    |  string  | (optional) |
+
+> `rateId` is required when `isFloat` is `false`.
+
+**Return data** :
+
+LetsExchange transaction payload, including fields such as `transaction_id`, `status`, `deposit`, `deposit_amount`, `withdrawal_amount`, `rate`, `expired_at`, and explorer URLs.
+
+
+## Get LetsExchange transaction
+
+**URL** : `/letsexchange/transaction/:id`
+
+**Method** : `GET`
+
+**Return data** :
+
+LetsExchange transaction details for the provided transaction ID.
+
+
+## Get LetsExchange transaction status
+
+**URL** : `/letsexchange/transaction/:id/status`
+
+**Method** : `GET`
+
+**Return data** :
+
+LetsExchange transaction status as a string such as `wait`, `confirming`, or `success`.
+
+
 # Admin endpoints
 
 ## Verify from backup

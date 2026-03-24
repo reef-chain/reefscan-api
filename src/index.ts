@@ -9,6 +9,7 @@ import verificationRouter from './routes/verification';
 import updateTokenIconRouter from './routes/updateTokenIcon';
 import solidityScanRouter from './routes/solidityScanScore';
 import stealthexRouter from './routes/stealthex';
+import letsexchangeRouter from './routes/letsexchange';
 import totalSupplyRouter from './routes/totalSupply';
 import alchemyPay from './routes/alchemyPay';
 import magicSquareRouter from './routes/magicSquare';
@@ -94,6 +95,7 @@ app.use('/api/verificator', verificationRouter);
 app.use('/api/updateTokenIcon',updateTokenIconRouter);
 app.use('/solidityScan/score',solidityScanRouter);
 app.use('/stealthex',stealthexRouter);
+app.use('/letsexchange', letsexchangeRouter);
 app.use('/total-supply',totalSupplyRouter);
 app.use('/alchemy-pay',alchemyPay);
 
