@@ -19,7 +19,7 @@ import { getProvider } from './utils/connector';
 import { backtrackEvents } from './backtracking/backtracking';
 import { sequelize } from './db/sequelize.db';
 import { VerifiedContractMainnet, VerifiedContractTestnet } from './db/VerifiedContract.db';
-import { getReefPrice } from "./routes/price";
+import { getReefPrice, getReefPriceGateIo } from "./routes/price";
 import { getVersion } from "./routes/version";
 import { Umzug, SequelizeStorage } from "umzug";
 import { trackFinalizedBlocks } from './services/finalized-blocks';
@@ -112,6 +112,7 @@ app.use('/magicsquare',magicSquareRouter)
 // });
 
 app.get('/price/reef', getReefPrice);
+app.get('/price/reef/gate-io', getReefPriceGateIo);
 app.get('/supply/reef', getReefSupply);
 app.get('/hc', getVersion);
 
